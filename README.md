@@ -10,4 +10,13 @@
 | [网购退货 8 个真相](life-hacks/returns/README.md) | 双 11 前先看:七天无理由、运费、定制商品等 |
 | [年休假 8 个真相](life-hacks/annual-leave/README.md) | 年底清假前:300% 怎么算、日工资公式、离职折算 |
 
+## 在线小工具
+
+手机浏览器直接打开就能用，计算都在本地完成，不上传数据。
+
+| 工具 | 能算什么 | 网页地址 |
+|---|---|---|
+| [劳动权益计算器](tools/labor-calculator/README.md) | 未休年假工资、年假天数折算、离职补偿 N / N+1 / 2N | https://wxxxwxxxshsb-wq.github.io/daily-life-hacks/tools/labor-calculator/ |
+| [预付卡退款计算器](tools/prepaid-refund/README.md) | 商家跑路或自己退卡：充值送金额卡、打折卡、次卡、年卡该退多少，7 天反悔，利息估算 | https://wxxxwxxxshsb-wq.github.io/daily-life-hacks/tools/prepaid-refund/ |
+
 之后按"钱、安全、权益"三类持续更新。
