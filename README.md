@@ -18,5 +18,6 @@
 |---|---|---|
 | [劳动权益计算器](tools/labor-calculator/README.md) | 未休年假工资、年假天数折算、离职补偿 N / N+1 / 2N | https://wxxxwxxxshsb-wq.github.io/daily-life-hacks/tools/labor-calculator/ |
 | [预付卡退款计算器](tools/prepaid-refund/README.md) | 商家跑路或自己退卡：充值送金额卡、打折卡、次卡、年卡该退多少，7 天反悔，利息估算 | https://wxxxwxxxshsb-wq.github.io/daily-life-hacks/tools/prepaid-refund/ |
+| [订阅清单](tools/subscription-tracker/README.md) | 记下所有会员和订阅：每月 / 每年总花费、按金额排序、7 天内扣费高亮、导出手机日历提醒（提前 3 天）、JSON 备份；数据只存在你自己的浏览器里 | https://wxxxwxxxshsb-wq.github.io/daily-life-hacks/tools/subscription-tracker/ |
 
 之后按"钱、安全、权益"三类持续更新。
