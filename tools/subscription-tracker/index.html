@@ -3,476 +3,309 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>订阅清单｜一年在会员上花多少钱 · Subscription Tracker</title>
-<link rel="icon" href="data:,">
-<meta name="description" content="记下你的会员和订阅，自动算每月、每年总花费，临近扣费高亮，导出日历提醒。数据只存在你自己的浏览器里，不上传。">
+<title>订阅清单 · Subscription Tracker</title>
+<meta name="description" content="记下会员和订阅，自动算本月应付、一年合计，扣费前提醒。数据只存在你自己的手机或电脑浏览器里，不上传、不注册。">
+<meta name="theme-color" content="#F2F4F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0F12" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="订阅清单">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
-  :root{
-    --bg:#f3f7f6; --card:#ffffff; --ink:#1c2733; --muted:#64748b; --line:#dfe7e5;
-    --brand:#0d9488; --brand-d:#0f766e; --brand-l:#e6f5f3; --warn:#b45309; --warn-l:#fff7e6;
-    --hot:#c2410c; --hot-l:#fff1e8; --bad:#b91c1c; --radius:16px;
-  }
-  *{box-sizing:border-box}
-  [hidden]{display:none!important}
-  html,body{margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
-    background:var(--bg);color:var(--ink);line-height:1.55;-webkit-text-size-adjust:100%}
-  .wrap{max-width:820px;margin:0 auto;padding:12px 14px 40px}
-  .top{display:flex;justify-content:flex-end}
-  .lang{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit}
-  header{text-align:center;padding:4px 4px 6px}
-  header h1{font-size:24px;margin:0 0 4px;letter-spacing:1px}
-  header p{margin:0;color:var(--muted);font-size:14px}
-  .notice{background:var(--warn-l);border:1px solid #fde3b0;color:var(--warn);border-radius:12px;padding:10px 14px;font-size:14px;margin:12px 0}
-  .card{background:var(--card);border-radius:var(--radius);padding:16px;margin-top:14px;box-shadow:0 4px 18px rgba(20,60,60,.06)}
-  .card h2{font-size:17px;margin:0 0 8px}
-  .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
-  .stat{background:var(--brand-l);border-radius:12px;padding:10px 12px}
-  .stat .lbl{font-size:12px;color:var(--muted)}
-  .stat .val{font-size:20px;font-weight:800;color:var(--brand-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .stat .val small{font-size:13px;font-weight:600}
-  .hint{font-size:12px;color:var(--muted);margin-top:8px}
-  label{display:block;font-size:13px;font-weight:600;margin:10px 0 5px}
-  input,select,textarea{width:100%;padding:11px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:#fbfdfd;color:var(--ink);font-family:inherit}
-  input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
-  .grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .btn{display:inline-block;padding:11px 16px;border:0;border-radius:12px;background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
-  .btn.ghost{background:var(--card);color:var(--brand-d);border:1px solid var(--brand)}
-  .btn.small{padding:6px 10px;font-size:13px;border-radius:9px}
-  .btn.danger{background:var(--card);color:var(--bad);border:1px solid #f3c4c4}
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-  .err{color:var(--bad);font-size:14px;margin-top:8px;min-height:1px}
-  .msg{color:var(--brand-d);font-size:14px;margin-top:8px;min-height:1px}
-  ul.list{list-style:none;margin:0;padding:0}
-  .item{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);padding:11px 2px}
-  .item:first-child{border-top:0}
-  .item .main{flex:1;min-width:0}
-  .item .name{font-weight:700;font-size:16px;word-break:break-word}
-  .item .meta{font-size:13px;color:var(--muted)}
-  .item .note{font-size:12px;color:var(--muted);word-break:break-word}
-  .item .amt{text-align:right;white-space:nowrap}
-  .item .amt b{font-size:16px}
-  .item .amt div{font-size:12px;color:var(--muted)}
-  .item .ops{display:flex;flex-direction:column;gap:5px}
-  .item.soon{background:var(--hot-l);border-radius:12px;padding-left:10px;padding-right:10px;border-top-color:transparent}
-  .badge{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--hot);border-radius:8px;padding:1px 7px;margin-left:6px;vertical-align:2px}
-  .empty{color:var(--muted);text-align:center;padding:18px 0;font-size:14px}
-  .privacy{font-size:13px;color:#334155;background:#f6faf9;border-left:3px solid var(--brand);padding:10px 12px;border-radius:6px}
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px}
-  .sr{position:absolute;left:-9999px}
-  @media (max-width:560px){
-    .grid{grid-template-columns:1fr 1fr}
-    .grid .full{grid-column:1/-1}
-    .item{flex-wrap:wrap}
-    .item .ops{flex-direction:row;width:100%;justify-content:flex-end}
-    header h1{font-size:21px}
-  }
+:root{
+  --pri:#0D9488;--pri-d:#0F766E;--pri-l:#E6F5F3;--pri-ink:#fff;
+  --bg:#F2F4F5;--page:#F2F4F5;--card:#FFFFFF;--card2:#F7F8F9;--ink:#111827;--ink2:#4B5563;--muted:#8A94A3;--line:rgba(17,24,39,.08);
+  --warn:#C2410C;--warn-l:#FFF1E8;--danger:#DC2626;--shadow:0 1px 2px rgba(17,24,39,.04),0 6px 20px rgba(17,24,39,.06);
+  --c-video:#E11D48;--c-music:#8B5CF6;--c-cloud:#0EA5E9;--c-software:#F59E0B;--c-learning:#2563EB;--c-other:#64748B;
+  --r:18px;--ease:cubic-bezier(.2,.8,.2,1);
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root{
+  --pri:#2DD4BF;--pri-d:#14B8A6;--pri-l:rgba(45,212,191,.14);--pri-ink:#042F2B;
+  --bg:#000;--page:#0B0F12;--card:#161B20;--card2:#1E252B;--ink:#F3F4F6;--ink2:#C2C8D0;--muted:#8B95A1;--line:rgba(255,255,255,.08);
+  --warn:#FB923C;--warn-l:rgba(251,146,60,.14);--danger:#F87171;--shadow:none;
+  --c-video:#FB7185;--c-music:#A78BFA;--c-cloud:#38BDF8;--c-software:#FBBF24;--c-learning:#60A5FA;--c-other:#94A3B8;
+}}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",system-ui,sans-serif;overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+.shell{position:relative;width:100%;max-width:430px;height:100dvh;margin:0 auto;background:var(--page);overflow:hidden;isolation:isolate}
+@media (min-width:600px){
+  body{display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%,#DDEFEC,transparent 60%),#E5E9EC}
+  .shell{height:min(900px,calc(100dvh - 48px));border-radius:40px;box-shadow:0 0 0 10px #111,0 30px 80px rgba(0,0,0,.25)}
+}
+@media (min-width:600px) and (prefers-color-scheme: dark){body{background:radial-gradient(circle at 30% 20%,#0F2A27,transparent 60%),#05080A}.shell{box-shadow:0 0 0 10px #2A2F35,0 30px 80px rgba(0,0,0,.6)}}
+.views{position:absolute;inset:0;bottom:calc(64px + var(--sab))}
+.view{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:calc(12px + var(--sat)) 16px 104px;opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity .2s var(--ease),transform .2s var(--ease),visibility 0s .2s;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.view.on{opacity:1;visibility:visible;transform:none;transition:opacity .2s var(--ease),transform .2s var(--ease)}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 4px 14px}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
+h1{font-size:32px;line-height:1.15;margin:2px 0 0;font-weight:800;letter-spacing:-.02em}
+h2{font-size:20px;margin:22px 4px 10px;font-weight:700;letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:baseline}
+h2 small{font-size:13px;font-weight:500;color:var(--muted)}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow)}
+.hero{position:relative;overflow:hidden;padding:18px 18px 16px;color:#fff;background:linear-gradient(140deg,#0F766E 0%,#0D9488 55%,#14B8A6 100%);border-radius:24px;box-shadow:0 10px 30px rgba(13,148,136,.28)}
+@media (prefers-color-scheme: dark){.hero{background:linear-gradient(140deg,#0B4F4A 0%,#0F766E 60%,#0D9488 100%);box-shadow:none}}
+.hero::after{content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero::before{content:"";position:absolute;right:30px;bottom:-70px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06)}
+.hero .lbl{font-size:13px;opacity:.85;font-weight:500}
+.hero .big{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:2px 0 12px;font-variant-numeric:tabular-nums;word-break:break-all}
+.hero .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;z-index:1}
+.hero .cell{background:rgba(255,255,255,.14);border-radius:14px;padding:9px 12px;min-width:0}
+.hero .cell b{display:block;font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero .cell span{font-size:12px;opacity:.85}
+.hero .more{position:relative;z-index:1;margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.hero .more span{font-size:12px;background:rgba(0,0,0,.14);padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums}
+.list{list-style:none;margin:0;padding:0;border-radius:var(--r);overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
+.row{position:relative;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row+.row .rowin::before{content:"";position:absolute;left:68px;right:0;top:0;border-top:1px solid var(--line)}
+.acts{position:absolute;top:0;right:0;bottom:0;display:flex}
+.acts button{width:76px;color:#fff;font-size:14px;font-weight:600}
+.acts .ed{background:#64748B}.acts .rm{background:var(--danger)}
+.rowin{position:relative;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);transition:transform .2s var(--ease)}
+.row.drag .rowin{transition:none}
+.av{flex:0 0 42px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:17px;background:var(--cc,var(--c-other))}
+.cat-video{--cc:var(--c-video)}.cat-music{--cc:var(--c-music)}.cat-cloud{--cc:var(--c-cloud)}.cat-software{--cc:var(--c-software)}.cat-learning{--cc:var(--c-learning)}.cat-other{--cc:var(--c-other)}
+.mid{flex:1;min-width:0}
+.nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{font-size:13px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cc);margin-right:5px;vertical-align:1px}
+.rt{text-align:right;flex:0 0 auto}
+.rt b{display:block;font-variant-numeric:tabular-nums;font-size:16px}
+.rt small{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--warn-l);color:var(--warn);margin-top:2px}
+.row.soon .av{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--warn)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 6px 0;text-align:center}
+.empty{text-align:center;padding:26px 18px 30px}
+.empty svg{width:180px;height:auto;margin:6px auto 4px;display:block}
+.empty h3{margin:6px 0 4px;font-size:19px}
+.empty p{margin:0 auto 16px;color:var(--ink2);font-size:14px;max-width:290px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:46px;padding:0 20px;border-radius:14px;font-weight:600;transition:transform .15s var(--ease),opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--pri);color:var(--pri-ink)}
+.btn.soft{background:var(--pri-l);color:var(--pri-d)}
+@media (prefers-color-scheme: dark){.btn.soft{color:var(--pri)}}
+.btn.block{width:100%}
+.btn.danger{background:rgba(220,38,38,.1);color:var(--danger)}
+.stack{display:flex;flex-direction:column;gap:10px;max-width:280px;margin:0 auto}
+.fab{position:absolute;right:20px;bottom:calc(80px + var(--sab));width:58px;height:58px;border-radius:50%;background:var(--pri);color:var(--pri-ink);box-shadow:0 8px 22px rgba(13,148,136,.4);display:grid;place-items:center;z-index:5;transition:transform .2s var(--ease),opacity .2s}
+.fab:active{transform:scale(.92)}
+.fab svg{width:26px;height:26px}
+.fab.hide{transform:scale(.6);opacity:0;pointer-events:none}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:calc(64px + var(--sab));padding-bottom:var(--sab);display:flex;background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border-top:1px solid var(--line);z-index:6}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);transition:color .15s}
+.tab svg{width:25px;height:25px}
+.tab.on{color:var(--pri)}
+.seg{display:flex;background:var(--card2);border-radius:11px;padding:3px;gap:2px}
+.seg button{flex:1;height:34px;border-radius:9px;font-size:14px;font-weight:600;color:var(--ink2);transition:background .18s var(--ease),color .18s}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+@media (prefers-color-scheme: dark){.seg button.on{background:#3A424B}}
+.panel{padding:16px}
+.donut-wrap{display:flex;align-items:center;gap:16px}
+.donut{flex:0 0 140px;width:140px;height:140px}
+.legend{flex:1;min-width:0;list-style:none;margin:0;padding:0;font-size:13.5px}
+.legend li{display:flex;align-items:center;gap:8px;padding:4px 0}
+.legend i{width:10px;height:10px;border-radius:3px;background:var(--cc);flex:0 0 auto}
+.legend span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.legend b{font-variant-numeric:tabular-nums;font-weight:600}
+.legend em{font-style:normal;color:var(--muted);font-size:12px;width:36px;text-align:right}
+.bars{width:100%;height:auto;display:block;margin-top:6px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{padding:12px 14px}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi b{display:block;font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calhead{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 10px}
+.calhead b{font-size:17px}
+.iconbtn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--pri);background:var(--pri-l)}
+.iconbtn svg{width:18px;height:18px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.grid .wd{font-size:12px;color:var(--muted);font-weight:600;padding:2px 0 6px}
+.day{position:relative;height:46px;border-radius:12px;font-size:15px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;transition:background .15s}
+.day.out{visibility:hidden}
+.day.today .n{background:var(--pri);color:var(--pri-ink);border-radius:50%;width:26px;height:26px;display:grid;place-items:center;margin-top:-3px}
+.day.sel{background:var(--pri-l)}
+.day.has .n{font-weight:700}
+.dots{display:flex;gap:3px;margin-top:3px;height:6px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--cc)}
+.group{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:13px 16px;min-height:52px;width:100%;text-align:left;position:relative}
+.item+.item::before{content:"";position:absolute;left:56px;right:0;top:0;border-top:1px solid var(--line)}
+.item .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;background:var(--ic,var(--pri));flex:0 0 auto}
+.item .ic svg{width:18px;height:18px}
+.item .tx{flex:1;min-width:0}
+.item .tx small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35;margin-top:1px}
+.item .chev{color:var(--muted);width:16px;height:16px;flex:0 0 auto}
+.item.red{color:var(--danger)}
+.item:active{background:var(--card2)}
+.note{font-size:13.5px;color:var(--ink2);padding:14px 16px;line-height:1.6}
+.note p{margin:0 0 8px}.note p:last-child{margin:0}
+.foot{text-align:center;font-size:12px;color:var(--muted);margin:18px 0 0}
+.foot a{color:var(--pri);text-decoration:none}
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.36);opacity:0;visibility:hidden;transition:opacity .22s var(--ease),visibility 0s .22s;z-index:10}
+.backdrop.on{opacity:1;visibility:visible;transition:opacity .22s var(--ease)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow-y:auto;overflow-x:hidden;background:var(--page);border-radius:22px 22px 0 0;padding:8px 16px calc(18px + var(--sab));transform:translateY(105%);transition:transform .25s var(--ease),visibility 0s .25s;visibility:hidden;z-index:11}
+.sheet.on{transform:none;visibility:visible;transition:transform .25s var(--ease)}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--line);margin:2px auto 10px;background:rgba(127,127,127,.35)}
+.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.shead b{font-size:17px}
+.shead button{color:var(--pri);font-weight:600;font-size:16px;padding:6px 2px;min-width:44px}
+.shead .x{color:var(--ink2);text-align:left}
+.shead .ok{text-align:right}
+.fl{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14px 4px 6px}
+.inp{width:100%;height:48px;border-radius:13px;border:1.5px solid transparent;background:var(--card);padding:0 14px;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none;min-width:0}
+.inp:focus{border-color:var(--pri)}
+.amt-row{display:flex;gap:8px}
+.amt-row .inp:first-child{flex:1;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.amt-row select{flex:0 0 108px}
+select.inp{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 21px,calc(100% - 13px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+input[type=date].inp{display:flex;align-items:center}
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cat{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;height:68px;padding:0 6px;font-size:13px!important;border-radius:13px;background:var(--card);font-size:14px;font-weight:600;border:1.5px solid transparent;transition:border-color .15s,background .15s;min-width:0}
+.cat i{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--cc);color:#fff;flex:0 0 auto}
+.cat i svg{width:17px;height:17px}
+.cat span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.cat.on{border-color:var(--cc);background:color-mix(in srgb,var(--cc) 10%,var(--card))}
+.err{color:var(--danger);font-size:13.5px;min-height:20px;margin:10px 4px 0}
+.prev{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);background:var(--pri-l);border-radius:12px;padding:10px 14px;margin-top:14px}
+.prev b{color:var(--pri-d);font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme: dark){.prev b{color:var(--pri)}}
+.asheet .opt{display:block;width:100%;height:54px;background:var(--card);font-size:17px;color:var(--pri);font-weight:500}
+.asheet .og{border-radius:16px;overflow:hidden}
+.asheet .og .opt+.opt{border-top:1px solid var(--line)}
+.asheet .opt.red{color:var(--danger)}
+.asheet .ttl{background:var(--card);text-align:center;font-size:13px;color:var(--muted);padding:12px 16px;border-bottom:1px solid var(--line)}
+.asheet .cancel{margin-top:8px;border-radius:16px;font-weight:700}
+.toast{position:absolute;left:50%;bottom:calc(92px + var(--sab));transform:translate(-50%,16px);background:rgba(17,24,39,.92);color:#fff;padding:10px 14px 10px 16px;border-radius:14px;font-size:14px;display:flex;gap:14px;align-items:center;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s var(--ease),visibility 0s .2s;z-index:20;max-width:calc(100% - 32px);width:max-content}
+@media (prefers-color-scheme: dark){.toast{background:rgba(55,65,81,.96)}}
+.toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s var(--ease)}
+.toast button{color:#5EEAD4;font-weight:700}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion: reduce){*{transition-duration:0s!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top"><button class="lang" id="langBtn" type="button">English</button></div>
-  <header>
-    <h1 data-i18n="title">订阅清单</h1>
-    <p data-i18n="subtitle">一年在会员和订阅上花了多少钱？记下来，快扣费时提醒你</p>
-  </header>
-
-  <div class="notice" id="privacyTop" data-i18n="privacy">数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。</div>
-
-  <section class="card" aria-labelledby="sumTitle">
-    <h2 id="sumTitle" data-i18n="summary">合计</h2>
-    <div class="sum" id="summary"></div>
-    <div class="hint" data-i18n="sumHint">按周期折算：季付 ÷ 3 = 每月，年付 ÷ 12 = 每月。不同币种分开合计，不做汇率换算。</div>
-  </section>
-
-  <section class="card" aria-labelledby="listTitle">
-    <h2 id="listTitle" data-i18n="list">我的订阅（按每月金额从高到低）</h2>
-    <ul class="list" id="list"></ul>
-  </section>
-
-  <section class="card" aria-labelledby="formTitle">
-    <h2 id="formTitle" data-i18n="add">添加订阅</h2>
-    <form id="form" autocomplete="off" novalidate>
-      <input type="hidden" id="fId">
-      <div class="grid">
-        <div class="full"><label for="fName" data-i18n="name">名称</label><input id="fName" maxlength="60" data-i18n-ph="namePh" placeholder="例如：视频会员、网盘、AI 助手"></div>
-        <div><label for="fAmount" data-i18n="amount">金额</label><input id="fAmount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="25"></div>
-        <div><label for="fCurrency" data-i18n="currency">币种</label>
-          <select id="fCurrency">
-            <option value="CNY">CNY ¥</option><option value="USD">USD $</option><option value="EUR">EUR €</option>
-            <option value="HKD">HKD</option><option value="TWD">TWD</option><option value="JPY">JPY</option>
-            <option value="GBP">GBP £</option><option value="CAD">CAD</option><option value="AUD">AUD</option>
-          </select></div>
+<div class="shell" id="shell">
+  <main class="views">
+    <section class="view on" id="v-subs" aria-labelledby="t-subs">
+      <div class="top"><div><div class="eyebrow" id="todayLbl"></div><h1 id="t-subs" data-i18n="tSubs">订阅</h1></div></div>
+      <div class="hero" id="hero"></div>
+      <div id="listWrap">
+        <h2><span data-i18n="all">全部订阅</span><small id="listMeta"></small></h2>
+        <ul class="list" id="list"></ul>
+        <p class="hint" data-i18n="swipeHint">左滑或长按可编辑、删除</p>
       </div>
-      <div class="grid2">
-        <div><label for="fCycle" data-i18n="cycle">扣费周期</label>
-          <select id="fCycle">
-            <option value="month" data-i18n="month">每月</option>
-            <option value="quarter" data-i18n="quarter">每季度</option>
-            <option value="year" data-i18n="year">每年</option>
-          </select></div>
-        <div><label for="fNext" data-i18n="next">下次扣费日</label><input id="fNext" type="date"></div>
+      <div class="empty card" id="empty" hidden>
+        <svg viewBox="0 0 200 140" aria-hidden="true">
+          <ellipse cx="100" cy="128" rx="70" ry="7" fill="currentColor" opacity=".06"/>
+          <rect x="38" y="34" width="112" height="78" rx="14" fill="#0D9488" opacity=".18" transform="rotate(-8 94 73)"/>
+          <rect x="50" y="26" width="112" height="84" rx="14" fill="var(--card)" stroke="#0D9488" stroke-width="2.5"/>
+          <rect x="50" y="26" width="112" height="22" rx="14" fill="#0D9488"/><rect x="50" y="38" width="112" height="10" fill="#0D9488"/>
+          <circle cx="72" cy="20" r="4" fill="#0F766E"/><rect x="70" y="14" width="4" height="16" rx="2" fill="#0F766E"/>
+          <rect x="138" y="14" width="4" height="16" rx="2" fill="#0F766E"/>
+          <circle cx="74" cy="68" r="9" fill="#E11D48"/><rect x="90" y="63" width="48" height="5" rx="2.5" fill="#CBD5E1"/><rect x="90" y="72" width="30" height="4" rx="2" fill="#E2E8F0"/>
+          <circle cx="74" cy="92" r="9" fill="#0EA5E9"/><rect x="90" y="87" width="40" height="5" rx="2.5" fill="#CBD5E1"/><rect x="90" y="96" width="24" height="4" rx="2" fill="#E2E8F0"/>
+          <circle cx="160" cy="104" r="20" fill="#F59E0B"/><path d="M160 94v10l7 5" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <h3 data-i18n="emptyT">还没有订阅</h3>
+        <p data-i18n="emptyP">把视频、音乐、网盘、软件会员记下来，自动算出每月和每年花多少，快扣费时提醒你。</p>
+        <div class="stack">
+          <button class="btn pri" type="button" id="emptyAdd" data-i18n="addFirst">添加第一个订阅</button>
+          <button class="btn soft" type="button" id="sampleBtn" data-i18n="addSample">一键添加示例</button>
+        </div>
       </div>
-      <label for="fNote" data-i18n="note">备注（可选）</label>
-      <input id="fNote" maxlength="120" data-i18n-ph="notePh" placeholder="例如：用哪个手机号开的、怎么取消">
-      <div class="err" id="formErr" role="alert"></div>
-      <div class="actions">
-        <button class="btn" type="submit" id="saveBtn" data-i18n="save">添加</button>
-        <button class="btn ghost" type="button" id="cancelEdit" hidden data-i18n="cancel">取消编辑</button>
+    </section>
+
+    <section class="view" id="v-stats" aria-labelledby="t-stats">
+      <div class="top"><div><div class="eyebrow" data-i18n="statsEy">按月均折算</div><h1 id="t-stats" data-i18n="tStats">统计</h1></div></div>
+      <div class="seg" id="curSeg" style="margin-bottom:12px"></div>
+      <div class="kpis"><div class="card kpi"><span data-i18n="avgM">月均花费</span><b id="kM">—</b></div><div class="card kpi"><span data-i18n="sumY">一年合计</span><b id="kY">—</b></div></div>
+      <h2><span data-i18n="byCat">分类占比</span></h2>
+      <div class="card panel"><div class="donut-wrap"><svg class="donut" id="donut" viewBox="0 0 140 140" role="img"></svg><ul class="legend" id="legend"></ul></div></div>
+      <h2><span data-i18n="next12">未来 12 个月扣费</span><small data-i18n="estimate">预估</small></h2>
+      <div class="card panel"><svg class="bars" id="bars" viewBox="0 0 340 190" role="img"></svg></div>
+      <p class="hint" data-i18n="statsHint">不同币种分开统计，不做汇率换算。</p>
+    </section>
+
+    <section class="view" id="v-cal" aria-labelledby="t-cal">
+      <div class="top"><div><div class="eyebrow" data-i18n="calEy">扣费日</div><h1 id="t-cal" data-i18n="tCal">日历</h1></div></div>
+      <div class="card panel">
+        <div class="calhead">
+          <button class="iconbtn" type="button" id="calPrev" aria-label="prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <b id="calTitle"></b>
+          <button class="iconbtn" type="button" id="calNext" aria-label="next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="grid" id="calGrid"></div>
       </div>
-    </form>
-  </section>
+      <h2><span id="calListT"></span><small id="calSum"></small></h2>
+      <ul class="list" id="calList"></ul>
+    </section>
 
-  <section class="card" aria-labelledby="dataTitle">
-    <h2 id="dataTitle" data-i18n="data">提醒与备份</h2>
-    <div class="actions" style="margin-top:4px">
-      <button class="btn" type="button" id="icsBtn" data-i18n="ics">导出日历提醒 (.ics)</button>
-      <button class="btn ghost" type="button" id="jsonBtn" data-i18n="exportJson">导出备份 (JSON)</button>
-      <button class="btn ghost" type="button" id="importBtn" data-i18n="importJson">导入备份</button>
-      <input type="file" id="importFile" accept=".json,application/json" class="sr" aria-hidden="true" tabindex="-1">
-      <button class="btn danger" type="button" id="clearBtn" data-i18n="clear">清空全部</button>
-    </div>
-    <div class="msg" id="dataMsg" role="status"></div>
-    <p class="hint" data-i18n="icsHint">.ics 文件可以用手机或电脑的日历打开导入：每个订阅按周期重复，扣费日前 3 天上午 9 点提醒。是否弹出提醒取决于你的日历 App。</p>
-    <p class="privacy" data-i18n="privacy2">隐私：本页面没有服务器、不联网、没有任何统计脚本。数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。导入备份会和现有清单合并（同一条以备份为准）。</p>
-  </section>
+    <section class="view" id="v-set" aria-labelledby="t-set">
+      <div class="top"><div><div class="eyebrow" data-i18n="setEy">数据只在本机</div><h1 id="t-set" data-i18n="tSet">设置</h1></div></div>
+      <h2><span data-i18n="language">语言</span></h2>
+      <div class="seg" id="langSeg"><button type="button" data-l="zh">中文</button><button type="button" data-l="en">English</button></div>
+      <h2><span data-i18n="remind">提醒与备份</span></h2>
+      <div class="group">
+        <button class="item" type="button" id="icsBtn" style="--ic:#F59E0B"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="tx"><span data-i18n="ics">导出日历提醒 (.ics)</span><small data-i18n="icsHint">扣费前 3 天上午 9 点提醒，用手机或电脑日历打开导入</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="item" type="button" id="expBtn" style="--ic:#0D9488"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><span class="tx"><span data-i18n="exp">导出备份 (JSON)</span><small data-i18n="expHint">换手机或清浏览器数据前先导出</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="item" type="button" id="impBtn" style="--ic:#2563EB"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></svg></span><span class="tx"><span data-i18n="imp">导入备份</span><small data-i18n="impHint">和现有清单合并，同一条以备份为准</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <input type="file" id="impFile" accept=".json,application/json" class="sr" tabindex="-1" aria-hidden="true">
+      <h2><span data-i18n="app">App</span></h2>
+      <div class="group">
+        <button class="item" type="button" id="installBtn" style="--ic:#8B5CF6"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span><span class="tx"><span data-i18n="install">添加到主屏幕</span><small id="installHint"></small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="item red" type="button" id="clearBtn" style="--ic:#DC2626"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></span><span class="tx" data-i18n="clear">清空全部数据</span></button>
+      </div>
+      <h2><span data-i18n="privacy">隐私说明</span></h2>
+      <div class="group note" id="privacyNote"></div>
+      <p class="foot"><span data-i18n="footer">订阅清单 v2 · 开源 MIT · 无广告无统计</span><br><a href="https://github.com/wxxxwxxxshsb-wq/daily-life-hacks/tree/main/tools/subscription-tracker" target="_blank" rel="noopener" data-i18n="source">查看源码</a></p>
+    </section>
+  </main>
 
-  <footer data-i18n="footer">一图小百科 · 数据只存在你的浏览器里，不上传 · MIT License</footer>
+  <button class="fab" type="button" id="fab" aria-label="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab on" type="button" data-v="subs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h6"/></svg><span data-i18n="tSubs">订阅</span></button>
+    <button class="tab" type="button" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span data-i18n="tStats">统计</span></button>
+    <button class="tab" type="button" data-v="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.4" fill="currentColor"/></svg><span data-i18n="tCal">日历</span></button>
+    <button class="tab" type="button" data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="tSet">设置</span></button>
+  </nav>
+
+  <div class="backdrop" id="backdrop"></div>
+
+  <form class="sheet" id="sheet" novalidate autocomplete="off" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+    <div class="grab"></div>
+    <div class="shead"><button type="button" class="x" id="sheetCancel" data-i18n="cancel">取消</button><b id="formTitle"></b><button type="submit" class="ok" id="sheetSave" data-i18n="save">保存</button></div>
+    <input type="hidden" id="fId">
+    <label class="fl" for="fName" data-i18n="name">名称</label>
+    <input class="inp" id="fName" maxlength="60" enterkeyhint="next" data-i18n-ph="namePh">
+    <span class="fl" data-i18n="category">分类</span>
+    <div class="cats" id="fCats" role="radiogroup"></div>
+    <label class="fl" for="fAmount" data-i18n="amount">金额</label>
+    <div class="amt-row"><input class="inp" id="fAmount" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00"><select class="inp" id="fCurrency" aria-label="currency"></select></div>
+    <span class="fl" data-i18n="cycle">扣费周期</span>
+    <div class="seg" id="fCycle" role="radiogroup"><button type="button" data-c="month" data-i18n="month">每月</button><button type="button" data-c="quarter" data-i18n="quarter">每季度</button><button type="button" data-c="year" data-i18n="year">每年</button></div>
+    <label class="fl" for="fNext" data-i18n="next">下次扣费日</label>
+    <input class="inp" id="fNext" type="date">
+    <label class="fl" for="fNote" data-i18n="note">备注（可选）</label>
+    <input class="inp" id="fNote" maxlength="120" data-i18n-ph="notePh">
+    <div class="prev" id="fPrev" hidden></div>
+    <div class="err" id="formErr" role="alert"></div>
+    <button class="btn pri block" type="submit" id="saveBtn" style="margin-top:4px" data-i18n="save">保存</button>
+    <button class="btn danger block" type="button" id="delInSheet" style="margin-top:10px" data-i18n="del" hidden>删除</button>
+  </form>
+
+  <div class="sheet asheet" id="asheet" role="dialog" aria-modal="true"></div>
+  <div class="toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastAct" hidden></button></div>
 </div>
-
-<script>
-// @@CORE-START
-(function (root) {
-  'use strict';
-  var CYCLES = { month: 1, quarter: 3, year: 12 };
-
-  function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
-
-  function parseDate(s) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
-    if (!m) return null;
-    var y = +m[1], mo = +m[2], d = +m[3];
-    var dt = new Date(Date.UTC(y, mo - 1, d));
-    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
-    return { y: y, m: mo, d: d };
-  }
-  function pad(n) { return (n < 10 ? '0' : '') + n; }
-  function fmtDate(o) { return o.y + '-' + pad(o.m) + '-' + pad(o.d); }
-  function dayNum(o) { return Math.floor(Date.UTC(o.y, o.m - 1, o.d) / 86400000); }
-  function daysInMonth(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
-
-  // 从锚定日 anchor 加 k 个周期（按月加，月末自动取当月最后一天）
-  function addMonths(anchor, months) {
-    var total = anchor.y * 12 + (anchor.m - 1) + months;
-    var y = Math.floor(total / 12), m = total % 12 + 1;
-    return { y: y, m: m, d: Math.min(anchor.d, daysInMonth(y, m)) };
-  }
-
-  // 下次扣费日：如果填写的日期已经过去，按周期顺延到今天或之后
-  function nextCharge(dateStr, cycle, todayStr) {
-    var a = parseDate(dateStr), t = parseDate(todayStr);
-    var step = CYCLES[cycle];
-    if (!a || !t || !step) return null;
-    var k = 0, cur = a;
-    while (dayNum(cur) < dayNum(t) && k < 10000) { k++; cur = addMonths(a, step * k); }
-    return fmtDate(cur);
-  }
-
-  function daysUntil(dateStr, todayStr) {
-    var a = parseDate(dateStr), t = parseDate(todayStr);
-    if (!a || !t) return null;
-    return dayNum(a) - dayNum(t);
-  }
-
-  function monthly(amount, cycle) { return round2(Number(amount) / CYCLES[cycle]); }
-  function yearly(amount, cycle) { return round2(Number(amount) * 12 / CYCLES[cycle]); }
-
-  // 按币种合计
-  function totals(subs) {
-    var by = {};
-    subs.forEach(function (s) {
-      var c = s.currency;
-      if (!by[c]) by[c] = { currency: c, monthly: 0, yearly: 0, count: 0 };
-      by[c].monthly += Number(s.amount) / CYCLES[s.cycle];
-      by[c].yearly += Number(s.amount) * 12 / CYCLES[s.cycle];
-      by[c].count++;
-    });
-    return Object.keys(by).map(function (k) {
-      var o = by[k]; o.monthly = round2(o.monthly); o.yearly = round2(o.yearly); return o;
-    }).sort(function (x, y) { return y.yearly - x.yearly; });
-  }
-
-  function sortByMonthly(subs) {
-    return subs.slice().sort(function (a, b) {
-      return monthly(b.amount, b.cycle) - monthly(a.amount, a.cycle) || String(a.name).localeCompare(String(b.name));
-    });
-  }
-
-  function validate(s) {
-    if (!s || typeof s !== 'object') return 'bad';
-    if (typeof s.name !== 'string' || !s.name.trim() || s.name.length > 60) return 'name';
-    var a = Number(s.amount);
-    if (!isFinite(a) || a <= 0 || a > 1e9) return 'amount';
-    if (typeof s.currency !== 'string' || !/^[A-Z]{3}$/.test(s.currency)) return 'currency';
-    if (!CYCLES[s.cycle]) return 'cycle';
-    if (!parseDate(s.next)) return 'next';
-    if (s.note != null && (typeof s.note !== 'string' || s.note.length > 120)) return 'note';
-    return '';
-  }
-
-  function clean(s, id) {
-    return { id: String(s.id || id), name: s.name.trim(), amount: round2(Number(s.amount)), currency: s.currency,
-      cycle: s.cycle, next: s.next, note: (s.note || '').trim() };
-  }
-
-  // 解析 JSON 备份：支持 {app, version, subscriptions:[...]} 或直接数组
-  function parseBackup(text) {
-    var data;
-    try { data = JSON.parse(text); } catch (e) { return { ok: false, error: 'json' }; }
-    var arr = Array.isArray(data) ? data : (data && Array.isArray(data.subscriptions) ? data.subscriptions : null);
-    if (!arr) return { ok: false, error: 'format' };
-    var good = [], bad = 0;
-    arr.forEach(function (s, i) {
-      if (validate(s)) { bad++; return; }
-      good.push(clean(s, 'imp-' + i + '-' + Date.now().toString(36)));
-    });
-    return { ok: true, items: good, skipped: bad };
-  }
-
-  function merge(existing, incoming) {
-    var map = {}, order = [];
-    existing.forEach(function (s) { map[s.id] = s; order.push(s.id); });
-    incoming.forEach(function (s) { if (!map[s.id]) order.push(s.id); map[s.id] = s; });
-    return order.map(function (id) { return map[id]; });
-  }
-
-  function makeBackup(subs, nowIso) {
-    return JSON.stringify({ app: 'daily-life-hacks/subscription-tracker', version: 1, exportedAt: nowIso, subscriptions: subs }, null, 2);
-  }
-
-  // ---- iCalendar (RFC 5545) ----
-  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
-  function utf8len(ch) { var c = ch.codePointAt(0); return c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4; }
-  function fold(line) {
-    var out = [], cur = '', len = 0, limit = 75;
-    Array.from(line).forEach(function (ch) {
-      var l = utf8len(ch);
-      if (len + l > limit) { out.push(cur); cur = ' '; len = 1; limit = 75; }
-      cur += ch; len += l;
-    });
-    out.push(cur);
-    return out.join('\r\n');
-  }
-  function rrule(cycle, d) {
-    if (cycle === 'year') return 'RRULE:FREQ=YEARLY';
-    var iv = cycle === 'quarter' ? ';INTERVAL=3' : '';
-    // 29/30/31 号扣费：没有这一天的月份取月末
-    if (d >= 29) return 'RRULE:FREQ=MONTHLY' + iv + ';BYMONTHDAY=' + d + ',-1;BYSETPOS=1';
-    return 'RRULE:FREQ=MONTHLY' + iv;
-  }
-  function buildICS(subs, opts) {
-    opts = opts || {};
-    var today = opts.today, stamp = opts.stamp || '20260101T000000Z', L = opts.lang === 'en' ? 'en' : 'zh';
-    var cyc = { zh: { month: '每月', quarter: '每季度', year: '每年' }, en: { month: 'monthly', quarter: 'quarterly', year: 'yearly' } }[L];
-    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//daily-life-hacks//subscription-tracker//' + (L === 'en' ? 'EN' : 'ZH'),
-      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:' + icsEscape(L === 'en' ? 'Subscriptions' : '订阅扣费提醒')];
-    subs.forEach(function (s) {
-      var nx = today ? nextCharge(s.next, s.cycle, today) : s.next;
-      var p = parseDate(nx);
-      var endDay = new Date(Date.UTC(p.y, p.m - 1, p.d + 1));
-      var endStr = endDay.getUTCFullYear() + pad(endDay.getUTCMonth() + 1) + pad(endDay.getUTCDate());
-      var money = s.amount + ' ' + s.currency;
-      var summary = L === 'en' ? ('Renewal: ' + s.name + ' (' + money + ')') : ('扣费：' + s.name + '（' + money + '）');
-      var desc = (L === 'en' ? 'Billed ' : '扣费周期：') + cyc[s.cycle] + (L === 'en' ? ', ' : '，') + money +
-        (s.note ? (L === 'en' ? '\nNote: ' : '\n备注：') + s.note : '') +
-        (L === 'en' ? '\nCancel before this date if you no longer need it.' : '\n不想续就在这天之前取消。');
-      lines.push('BEGIN:VEVENT', 'UID:' + icsEscape(s.id) + '@subscription-tracker.daily-life-hacks', 'DTSTAMP:' + stamp,
-        'DTSTART;VALUE=DATE:' + nx.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + endStr, rrule(s.cycle, p.d),
-        'SUMMARY:' + icsEscape(summary), 'DESCRIPTION:' + icsEscape(desc), 'TRANSP:TRANSPARENT',
-        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(summary), 'TRIGGER:-PT63H', 'END:VALARM', 'END:VEVENT');
-    });
-    lines.push('END:VCALENDAR');
-    return lines.map(fold).join('\r\n') + '\r\n';
-  }
-
-  root.SubCalc = { CYCLES: CYCLES, round2: round2, parseDate: parseDate, nextCharge: nextCharge, daysUntil: daysUntil,
-    monthly: monthly, yearly: yearly, totals: totals, sortByMonthly: sortByMonthly, validate: validate, clean: clean,
-    parseBackup: parseBackup, merge: merge, makeBackup: makeBackup, buildICS: buildICS, fold: fold };
-})(typeof window !== 'undefined' ? window : globalThis);
-// @@CORE-END
-
-(function () {
-  'use strict';
-  var C = window.SubCalc, KEY = 'dlh-subscription-tracker-v1', LKEY = 'dlh-subscription-tracker-lang';
-  var T = {
-    zh: { title: '订阅清单', subtitle: '一年在会员和订阅上花了多少钱？记下来，快扣费时提醒你',
-      privacy: '数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。',
-      summary: '合计', sumHint: '按周期折算：季付 ÷ 3 = 每月，年付 ÷ 12 = 每月。不同币种分开合计，不做汇率换算。',
-      add: '添加订阅', edit: '编辑订阅', name: '名称', namePh: '例如：视频会员、网盘、AI 助手', amount: '金额', currency: '币种',
-      cycle: '扣费周期', month: '每月', quarter: '每季度', year: '每年', next: '下次扣费日', note: '备注（可选）',
-      notePh: '例如：用哪个手机号开的、怎么取消', save: '添加', update: '保存修改', cancel: '取消编辑',
-      list: '我的订阅（按每月金额从高到低）', data: '提醒与备份', ics: '导出日历提醒 (.ics)', exportJson: '导出备份 (JSON)',
-      importJson: '导入备份', clear: '清空全部',
-      icsHint: '.ics 文件可以用手机或电脑的日历打开导入：每个订阅按周期重复，扣费日前 3 天上午 9 点提醒。是否弹出提醒取决于你的日历 App。',
-      privacy2: '隐私：本页面没有服务器、不联网、没有任何统计脚本。数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。导入备份会和现有清单合并（同一条以备份为准）。',
-      footer: '一图小百科 · 数据只存在你的浏览器里，不上传 · MIT License',
-      perMonth: '每月', perYear: '每年', items: '项', count: '订阅数', empty: '还没有订阅。先在上面添加一个吧。',
-      totalM: '每月合计', totalY: '每年合计', del: '删除', editBtn: '编辑', today: '今天扣费', inDays: '{n} 天后',
-      nextOn: '下次 {d}', confirmDel: '删除“{n}”？', confirmClear: '确定清空全部订阅？建议先导出备份。',
-      e_name: '请填写名称（60 字以内）', e_amount: '请填写大于 0 的金额', e_next: '请选择下次扣费日', e_currency: '币种不正确', e_cycle: '周期不正确',
-      noData: '清单是空的，先添加订阅', icsDone: '已导出 {n} 条日历提醒', jsonDone: '已导出 {n} 条备份',
-      impDone: '已导入 {n} 条', impSkip: '，跳过 {n} 条格式不对的', impErr: '导入失败：不是本工具导出的备份文件', saveErr: '浏览器不允许保存（可能是无痕模式），刷新后数据会丢失',
-      lang: 'English' },
-    en: { title: 'Subscription Tracker', subtitle: 'How much do your subscriptions cost per year? Track them and get reminded before renewals',
-      privacy: 'Your data stays only in this browser on this device. Export a backup before switching devices or clearing data. Safari may delete data for sites you have not visited in a long time.',
-      summary: 'Totals', sumHint: 'Quarterly ÷ 3 and yearly ÷ 12 give the monthly figure. Each currency is totaled separately; no exchange rates.',
-      add: 'Add a subscription', edit: 'Edit subscription', name: 'Name', namePh: 'e.g. video streaming, cloud storage, AI chat', amount: 'Amount', currency: 'Currency',
-      cycle: 'Billing cycle', month: 'Monthly', quarter: 'Quarterly', year: 'Yearly', next: 'Next charge date', note: 'Note (optional)',
-      notePh: 'e.g. which account, how to cancel', save: 'Add', update: 'Save changes', cancel: 'Cancel',
-      list: 'My subscriptions (highest monthly cost first)', data: 'Reminders & backup', ics: 'Export calendar (.ics)', exportJson: 'Export backup (JSON)',
-      importJson: 'Import backup', clear: 'Delete all',
-      icsHint: 'Open the .ics file with your phone or computer calendar. Each subscription repeats on its cycle with an alert at 9 AM, 3 days before the charge. Whether the alert pops up depends on your calendar app.',
-      privacy2: 'Privacy: no server, no network requests, no analytics. Your data stays only in this browser on this device. Export a backup before switching devices or clearing data. Safari may delete data for sites you have not visited in a long time. Importing merges with your list (the backup wins for the same entry).',
-      footer: 'daily-life-hacks · Data stays in your browser, never uploaded · MIT License',
-      perMonth: '/mo', perYear: '/yr', items: 'items', count: 'Subscriptions', empty: 'No subscriptions yet. Add one above.',
-      totalM: 'Monthly total', totalY: 'Yearly total', del: 'Delete', editBtn: 'Edit', today: 'Charges today', inDays: 'in {n} days',
-      nextOn: 'Next {d}', confirmDel: 'Delete "{n}"?', confirmClear: 'Delete all subscriptions? Export a backup first.',
-      e_name: 'Enter a name (max 60 characters)', e_amount: 'Enter an amount greater than 0', e_next: 'Pick the next charge date', e_currency: 'Invalid currency', e_cycle: 'Invalid cycle',
-      noData: 'The list is empty. Add a subscription first.', icsDone: 'Exported {n} calendar reminders', jsonDone: 'Exported {n} entries',
-      impDone: 'Imported {n}', impSkip: ', skipped {n} invalid', impErr: 'Import failed: not a backup from this tool', saveErr: 'This browser blocks storage (private mode?); data will be lost on reload',
-      lang: '中文' }
-  };
-  var lang = 'zh';
-  try { lang = localStorage.getItem(LKEY) || (/^zh/i.test(navigator.language || 'zh') ? 'zh' : 'en'); } catch (e) {}
-  if (!T[lang]) lang = 'zh';
-  function t(k, v) { var s = T[lang][k] || k; if (v) Object.keys(v).forEach(function (x) { s = s.replace('{' + x + '}', v[x]); }); return s; }
-  var $ = function (id) { return document.getElementById(id); };
-
-  var subs = [];
-  try { var raw = localStorage.getItem(KEY); if (raw) { var p = C.parseBackup(raw); if (p.ok) subs = p.items; } } catch (e) {}
-
-  function persist() {
-    try { localStorage.setItem(KEY, C.makeBackup(subs, new Date().toISOString())); return true; }
-    catch (e) { $('dataMsg').textContent = t('saveErr'); return false; }
-  }
-  function todayStr() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
-  function fmtMoney(n, cur) {
-    try { return new Intl.NumberFormat(lang === 'zh' ? 'zh-CN' : 'en-US', { style: 'currency', currency: cur, maximumFractionDigits: 2 }).format(n); }
-    catch (e) { return n.toFixed(2) + ' ' + cur; }
-  }
-  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-
-  function applyLang() {
-    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-    document.querySelectorAll('[data-i18n]').forEach(function (n) { n.textContent = t(n.getAttribute('data-i18n')); });
-    document.querySelectorAll('[data-i18n-ph]').forEach(function (n) { n.placeholder = t(n.getAttribute('data-i18n-ph')); });
-    $('langBtn').textContent = t('lang');
-    $('formTitle').textContent = $('fId').value ? t('edit') : t('add');
-    $('saveBtn').textContent = $('fId').value ? t('update') : t('save');
-    render();
-  }
-
-  function render() {
-    var today = todayStr();
-    var sum = $('summary'); sum.textContent = '';
-    var tots = C.totals(subs);
-    var cnt = el('div', 'stat'); cnt.appendChild(el('div', 'lbl', t('count'))); cnt.appendChild(el('div', 'val', String(subs.length)));
-    sum.appendChild(cnt);
-    if (!tots.length) {
-      ['totalM', 'totalY'].forEach(function (k) { var s = el('div', 'stat'); s.appendChild(el('div', 'lbl', t(k))); s.appendChild(el('div', 'val', '0')); sum.appendChild(s); });
-    }
-    tots.forEach(function (o) {
-      var a = el('div', 'stat'); a.appendChild(el('div', 'lbl', t('totalM') + ' · ' + o.currency));
-      var v = el('div', 'val', fmtMoney(o.monthly, o.currency)); v.setAttribute('data-total-m', o.currency); a.appendChild(v); sum.appendChild(a);
-      var b = el('div', 'stat'); b.appendChild(el('div', 'lbl', t('totalY') + ' · ' + o.currency));
-      var w = el('div', 'val', fmtMoney(o.yearly, o.currency)); w.setAttribute('data-total-y', o.currency); b.appendChild(w); sum.appendChild(b);
-    });
-
-    var list = $('list'); list.textContent = '';
-    if (!subs.length) { list.appendChild(el('li', 'empty', t('empty'))); return; }
-    C.sortByMonthly(subs).forEach(function (s) {
-      var nx = C.nextCharge(s.next, s.cycle, today), dd = C.daysUntil(nx, today);
-      var li = el('li', 'item' + (dd >= 0 && dd <= 7 ? ' soon' : '')); li.setAttribute('data-id', s.id);
-      var main = el('div', 'main');
-      var nm = el('div', 'name', s.name);
-      if (dd >= 0 && dd <= 7) nm.appendChild(el('span', 'badge', dd === 0 ? t('today') : t('inDays', { n: dd })));
-      main.appendChild(nm);
-      main.appendChild(el('div', 'meta', t(s.cycle) + ' ' + fmtMoney(s.amount, s.currency) + ' · ' + t('nextOn', { d: nx })));
-      if (s.note) main.appendChild(el('div', 'note', s.note));
-      var amt = el('div', 'amt');
-      amt.appendChild(el('b', null, fmtMoney(C.monthly(s.amount, s.cycle), s.currency) + (lang === 'zh' ? ' / 月' : ' /mo')));
-      amt.appendChild(el('div', null, fmtMoney(C.yearly(s.amount, s.cycle), s.currency) + (lang === 'zh' ? ' / 年' : ' /yr')));
-      var ops = el('div', 'ops');
-      var e = el('button', 'btn ghost small', t('editBtn')); e.type = 'button'; e.onclick = function () { startEdit(s.id); };
-      var d = el('button', 'btn danger small', t('del')); d.type = 'button'; d.className += ' del';
-      d.onclick = function () { if (confirm(t('confirmDel', { n: s.name }))) { subs = subs.filter(function (x) { return x.id !== s.id; }); persist(); render(); } };
-      ops.appendChild(e); ops.appendChild(d);
-      li.appendChild(main); li.appendChild(amt); li.appendChild(ops);
-      list.appendChild(li);
-    });
-  }
-
-  function resetForm() {
-    $('form').reset(); $('fId').value = ''; $('cancelEdit').hidden = true; $('formErr').textContent = '';
-    $('fCurrency').value = lang === 'zh' ? 'CNY' : 'USD';
-    $('formTitle').textContent = t('add'); $('saveBtn').textContent = t('save');
-  }
-  function startEdit(id) {
-    var s = subs.filter(function (x) { return x.id === id; })[0]; if (!s) return;
-    $('fId').value = s.id; $('fName').value = s.name; $('fAmount').value = s.amount; $('fCurrency').value = s.currency;
-    $('fCycle').value = s.cycle; $('fNext').value = s.next; $('fNote').value = s.note || '';
-    $('cancelEdit').hidden = false; $('formTitle').textContent = t('edit'); $('saveBtn').textContent = t('update');
-    $('fName').focus(); $('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  $('cancelEdit').onclick = resetForm;
-  $('form').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var s = { id: $('fId').value || ('s' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
-      name: $('fName').value, amount: $('fAmount').value, currency: $('fCurrency').value, cycle: $('fCycle').value,
-      next: $('fNext').value, note: $('fNote').value };
-    var err = C.validate(s);
-    if (err) { $('formErr').textContent = t('e_' + err) || err; return; }
-    s = C.clean(s);
-    var i = subs.findIndex(function (x) { return x.id === s.id; });
-    if (i >= 0) subs[i] = s; else subs.push(s);
-    persist(); resetForm(); render();
-  });
-
-  function download(name, text, type) {
-    var blob = new Blob([text], { type: type });
-    var url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href = url; a.download = name; document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
-  }
-  function stamp() { return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z'); }
-  $('icsBtn').onclick = function () {
-    if (!subs.length) { $('dataMsg').textContent = t('noData'); return; }
-    download('subscriptions.ics', C.buildICS(C.sortByMonthly(subs), { today: todayStr(), stamp: stamp(), lang: lang }), 'text/calendar;charset=utf-8');
-    $('dataMsg').textContent = t('icsDone', { n: subs.length });
-  };
-  $('jsonBtn').onclick = function () {
-    if (!subs.length) { $('dataMsg').textContent = t('noData'); return; }
-    download('subscriptions-backup-' + todayStr() + '.json', C.makeBackup(subs, new Date().toISOString()), 'application/json');
-    $('dataMsg').textContent = t('jsonDone', { n: subs.length });
-  };
-  $('importBtn').onclick = function () { $('importFile').click(); };
-  $('importFile').onchange = function () {
-    var f = this.files && this.files[0]; if (!f) return;
-    var r = new FileReader();
-    r.onload = function () {
-      var p = C.parseBackup(String(r.result));
-      if (!p.ok) { $('dataMsg').textContent = t('impErr'); return; }
-      subs = C.merge(subs, p.items); persist(); render();
-      $('dataMsg').textContent = t('impDone', { n: p.items.length }) + (p.skipped ? t('impSkip', { n: p.skipped }) : '');
-    };
-    r.readAsText(f); this.value = '';
-  };
-  $('clearBtn').onclick = function () { if (subs.length && confirm(t('confirmClear'))) { subs = []; persist(); render(); } };
-  $('langBtn').onclick = function () { lang = lang === 'zh' ? 'en' : 'zh'; try { localStorage.setItem(LKEY, lang); } catch (e) {} applyLang(); if (!$('fId').value) $('fCurrency').value = lang === 'zh' ? 'CNY' : 'USD'; };
-
-  resetForm(); applyLang();
-})();
-</script>
+<script src="core.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

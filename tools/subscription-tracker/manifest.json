@@ -1,0 +1,20 @@
+{
+  "name": "订阅清单 · Subscription Tracker",
+  "short_name": "订阅清单",
+  "description": "记下会员和订阅，算本月应付、一年合计，扣费前提醒。数据只存在本机。",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F4F5",
+  "theme_color": "#0D9488",
+  "lang": "zh-CN",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

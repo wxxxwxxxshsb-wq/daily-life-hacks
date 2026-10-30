@@ -1,13 +1,12 @@
 // 运行：node --test test.js
-// 直接从 index.html 中提取核心代码（@@CORE-START ~ @@CORE-END），保证测的就是页面里的代码。
+// 直接加载页面用的 core.js，保证测的就是 App 里的代码。
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const core = html.split('// @@CORE-START')[1].split('// @@CORE-END')[0];
+const core = fs.readFileSync(path.join(__dirname, 'core.js'), 'utf8');
 const sandbox = {};
 sandbox.globalThis = sandbox;
 vm.runInNewContext(core, sandbox);
@@ -17,7 +16,7 @@ const subs = [
   { id: 'a', name: '视频会员', amount: 25, currency: 'CNY', cycle: 'month', next: '2026-11-03', note: '' },
   { id: 'b', name: '网盘', amount: 298, currency: 'CNY', cycle: 'year', next: '2027-03-01', note: '' },
   { id: 'c', name: '音乐', amount: 45, currency: 'CNY', cycle: 'quarter', next: '2026-12-15', note: '' },
-  { id: 'd', name: 'AI chat', amount: 20, currency: 'USD', cycle: 'month', next: '2026-11-20', note: '' },
+  { id: 'd', name: 'Writing app', amount: 20, currency: 'USD', cycle: 'month', next: '2026-11-20', note: '' },
 ];
 
 test('每月 / 每年折算', () => {
@@ -84,4 +83,35 @@ test('.ics：CRLF、每条一个提醒、提前 3 天、行长 ≤ 75 字节', (
   assert.ok(unfolded.includes('\\,\\;'));
   assert.ok(unfolded.includes('第一行\\n第二行'));
   assert.ok(!/[^\r]\n/.test(ics));
+});
+
+test('分类：缺省为其他，非法分类拒绝', () => {
+  assert.equal(C.clean({ name: 'x', amount: 1, currency: 'CNY', cycle: 'month', next: '2026-11-01' }, 'i').category, 'other');
+  assert.equal(C.clean({ name: 'x', amount: 1, currency: 'CNY', cycle: 'month', next: '2026-11-01', category: 'music' }, 'i').category, 'music');
+  assert.equal(C.validate({ name: 'x', amount: 1, currency: 'CNY', cycle: 'month', next: '2026-11-01', category: 'food' }), 'category');
+});
+
+test('扣费日展开、本月应付、未来 12 个月预估', () => {
+  assert.deepEqual(Array.from(C.occurrences({ next: '2026-01-31', cycle: 'month' }, '2026-10-01', '2027-02-28')),
+    ['2026-10-31', '2026-11-30', '2026-12-31', '2027-01-31', '2027-02-28']);
+  assert.deepEqual(Array.from(C.occurrences({ next: '2026-12-01', cycle: 'month' }, '2026-10-01', '2026-11-30')), []);
+  const nov = C.monthCharges(subs, 2026, 11);
+  assert.equal(nov.byCurrency.CNY, 25);
+  assert.equal(nov.byCurrency.USD, 20);
+  const fc = C.forecast(subs, '2026-10-29', 12);
+  assert.equal(fc.length, 12);
+  assert.equal(fc[0].m, 10);
+  assert.equal(fc[11].y, 2027);
+  assert.equal(fc[11].m, 9);
+  assert.equal(fc[2].byCurrency.CNY, 70);   // 12 月：视频 25 + 音乐季付 45
+  assert.equal(fc[5].byCurrency.CNY, 368);  // 3 月：视频 25 + 网盘年付 298 + 音乐季付 45
+  const yearCny = fc.reduce((a, f) => a + (f.byCurrency.CNY || 0), 0);
+  assert.equal(yearCny, 25 * 11 + 298 + 45 * 4);  // 10 月无扣费（11-03 起）
+});
+
+test('分类月均', () => {
+  const s2 = subs.map((s, i) => ({ ...s, category: ['video', 'cloud', 'music', 'software'][i] }));
+  const cats = C.byCategory(s2, 'CNY');
+  assert.deepEqual(Array.from(cats, c => c.category), ['video', 'cloud', 'music']);
+  assert.equal(cats[1].monthly, 24.83);
 });
