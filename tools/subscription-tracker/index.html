@@ -4,186 +4,111 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>订阅清单 · Subscription Tracker</title>
-<meta name="description" content="记下会员和订阅，自动算本月应付、一年合计，扣费前提醒。数据只存在你自己的手机或电脑浏览器里，不上传、不注册。">
+<meta name="description" content="记下每月自动扣费的订阅，看看每月花多少钱。数据只存在你自己的浏览器里，不上传、不注册。">
 <meta name="theme-color" content="#F2F4F5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B0F12" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="订阅清单">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
-:root{
-  --pri:#0D9488;--pri-d:#0F766E;--pri-l:#E6F5F3;--pri-ink:#fff;
-  --bg:#F2F4F5;--page:#F2F4F5;--card:#FFFFFF;--card2:#F7F8F9;--ink:#111827;--ink2:#4B5563;--muted:#8A94A3;--line:rgba(17,24,39,.08);
-  --warn:#C2410C;--warn-l:#FFF1E8;--danger:#DC2626;--shadow:0 1px 2px rgba(17,24,39,.04),0 6px 20px rgba(17,24,39,.06);
-  --c-video:#E11D48;--c-music:#8B5CF6;--c-cloud:#0EA5E9;--c-software:#F59E0B;--c-learning:#2563EB;--c-other:#64748B;
-  --r:18px;--ease:cubic-bezier(.2,.8,.2,1);
-  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){:root{
-  --pri:#2DD4BF;--pri-d:#14B8A6;--pri-l:rgba(45,212,191,.14);--pri-ink:#042F2B;
-  --bg:#000;--page:#0B0F12;--card:#161B20;--card2:#1E252B;--ink:#F3F4F6;--ink2:#C2C8D0;--muted:#8B95A1;--line:rgba(255,255,255,.08);
-  --warn:#FB923C;--warn-l:rgba(251,146,60,.14);--danger:#F87171;--shadow:none;
-  --c-video:#FB7185;--c-music:#A78BFA;--c-cloud:#38BDF8;--c-software:#FBBF24;--c-learning:#60A5FA;--c-other:#94A3B8;
-}}
+:root{--pri:#0D9488;--pri-d:#0F766E;--pri-l:#E6F5F3;--pri-ink:#fff;--bg:#F2F4F5;--card:#fff;--card2:#F1F3F4;--ink:#111827;--ink2:#4B5563;--muted:#8A94A3;--line:rgba(17,24,39,.08);
+  --warn:#C2410C;--warn-l:#FFF1E8;--danger:#DC2626;--shadow:0 1px 2px rgba(17,24,39,.04),0 6px 20px rgba(17,24,39,.06);--ease:cubic-bezier(.2,.8,.2,1);
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root{--pri:#2DD4BF;--pri-d:#14B8A6;--pri-l:rgba(45,212,191,.14);--pri-ink:#042F2B;--bg:#0B0F12;--card:#161B20;--card2:#222A31;--ink:#F3F4F6;--ink2:#C2C8D0;--muted:#8B95A1;--line:rgba(255,255,255,.08);--warn:#FB923C;--warn-l:rgba(251,146,60,.15);--danger:#F87171;--shadow:none}}
 [hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",system-ui,sans-serif;overflow:hidden}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC",system-ui,sans-serif}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
-.shell{position:relative;width:100%;max-width:430px;height:100dvh;margin:0 auto;background:var(--page);overflow:hidden;isolation:isolate}
-@media (min-width:600px){
-  body{display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%,#DDEFEC,transparent 60%),#E5E9EC}
-  .shell{height:min(900px,calc(100dvh - 48px));border-radius:40px;box-shadow:0 0 0 10px #111,0 30px 80px rgba(0,0,0,.25)}
-}
-@media (min-width:600px) and (prefers-color-scheme: dark){body{background:radial-gradient(circle at 30% 20%,#0F2A27,transparent 60%),#05080A}.shell{box-shadow:0 0 0 10px #2A2F35,0 30px 80px rgba(0,0,0,.6)}}
-.views{position:absolute;inset:0;bottom:calc(64px + var(--sab))}
-.view{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:calc(12px + var(--sat)) 16px 104px;opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity .2s var(--ease),transform .2s var(--ease),visibility 0s .2s;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-.view.on{opacity:1;visibility:visible;transform:none;transition:opacity .2s var(--ease),transform .2s var(--ease)}
-.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 4px 14px}
-.eyebrow{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
-h1{font-size:32px;line-height:1.15;margin:2px 0 0;font-weight:800;letter-spacing:-.02em}
-h2{font-size:20px;margin:22px 4px 10px;font-weight:700;letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:baseline}
-h2 small{font-size:13px;font-weight:500;color:var(--muted)}
-.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow)}
-.hero{position:relative;overflow:hidden;padding:18px 18px 16px;color:#fff;background:linear-gradient(140deg,#0F766E 0%,#0D9488 55%,#14B8A6 100%);border-radius:24px;box-shadow:0 10px 30px rgba(13,148,136,.28)}
-@media (prefers-color-scheme: dark){.hero{background:linear-gradient(140deg,#0B4F4A 0%,#0F766E 60%,#0D9488 100%);box-shadow:none}}
-.hero::after{content:"";position:absolute;right:-40px;top:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08)}
-.hero::before{content:"";position:absolute;right:30px;bottom:-70px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06)}
-.hero .lbl{font-size:13px;opacity:.85;font-weight:500}
-.hero .big{font-size:38px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:2px 0 12px;font-variant-numeric:tabular-nums;word-break:break-all}
-.hero .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;z-index:1}
-.hero .cell{background:rgba(255,255,255,.14);border-radius:14px;padding:9px 12px;min-width:0}
-.hero .cell b{display:block;font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hero .cell span{font-size:12px;opacity:.85}
-.hero .more{position:relative;z-index:1;margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
-.hero .more span{font-size:12px;background:rgba(0,0,0,.14);padding:3px 9px;border-radius:99px;font-variant-numeric:tabular-nums}
-.list{list-style:none;margin:0;padding:0;border-radius:var(--r);overflow:hidden;background:var(--card);box-shadow:var(--shadow)}
-.row{position:relative;overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.row+.row .rowin::before{content:"";position:absolute;left:68px;right:0;top:0;border-top:1px solid var(--line)}
-.acts{position:absolute;top:0;right:0;bottom:0;display:flex}
-.acts button{width:76px;color:#fff;font-size:14px;font-weight:600}
-.acts .ed{background:#64748B}.acts .rm{background:var(--danger)}
-.rowin{position:relative;display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);transition:transform .2s var(--ease)}
-.row.drag .rowin{transition:none}
-.av{flex:0 0 42px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:17px;background:var(--cc,var(--c-other))}
-.cat-video{--cc:var(--c-video)}.cat-music{--cc:var(--c-music)}.cat-cloud{--cc:var(--c-cloud)}.cat-software{--cc:var(--c-software)}.cat-learning{--cc:var(--c-learning)}.cat-other{--cc:var(--c-other)}
+.shell{position:relative;max-width:430px;min-height:100dvh;margin:0 auto;background:var(--bg);padding:calc(16px + var(--sat)) 16px calc(40px + var(--sab))}
+@media (min-width:600px){body{background:#E5E9EC;padding:24px 0}.shell{min-height:calc(100dvh - 48px);border-radius:36px;box-shadow:0 0 0 10px #111,0 30px 80px rgba(0,0,0,.2)}}
+@media (min-width:600px) and (prefers-color-scheme: dark){body{background:#05080A}.shell{box-shadow:0 0 0 10px #2A2F35}}
+.top{display:flex;align-items:center;justify-content:space-between;margin:4px 2px 2px}
+h1{font-size:28px;margin:0;font-weight:800;letter-spacing:-.02em}
+.gear{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--card);color:var(--ink2);box-shadow:var(--shadow)}
+.gear svg{width:21px;height:21px}
+.lead{margin:4px 2px 16px;color:var(--ink2);font-size:15px}
+.hero{position:relative;overflow:hidden;color:#fff;border-radius:24px;padding:20px 20px 18px;background:linear-gradient(140deg,#0F766E,#0D9488 55%,#14B8A6);box-shadow:0 10px 30px rgba(13,148,136,.28)}
+@media (prefers-color-scheme: dark){.hero{background:linear-gradient(140deg,#0B4F4A,#0F766E 60%,#0D9488);box-shadow:none}}
+.hero::after{content:"";position:absolute;right:-40px;top:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.09)}
+.hero .lbl{font-size:15px;opacity:.9;font-weight:600}
+.hero .big{font-size:44px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:4px 0 6px;font-variant-numeric:tabular-nums;word-break:break-all;position:relative}
+.hero .small{font-size:14px;opacity:.9;position:relative}
+.hero .extra{font-size:12.5px;opacity:.8;margin-top:4px;position:relative}
+.add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:56px;margin:16px 0 8px;border-radius:18px;background:var(--pri);color:var(--pri-ink);font-size:17px;font-weight:700;box-shadow:0 8px 20px rgba(13,148,136,.3);transition:transform .15s var(--ease)}
+.add:active,.btn:active{transform:scale(.97)}
+.add svg{width:22px;height:22px}
+.sect{display:flex;justify-content:space-between;align-items:baseline;margin:16px 4px 8px;font-weight:700;font-size:17px}
+.sect small{font-weight:500;font-size:13px;color:var(--muted)}
+.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.row{position:relative;display:flex;align-items:center}
+.row+.row::before{content:"";position:absolute;left:68px;right:0;top:0;border-top:1px solid var(--line)}
+.hit{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:13px 4px 13px 14px;text-align:left}
+.av{flex:0 0 42px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:17px;background:var(--pri)}
 .mid{flex:1;min-width:0}
 .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sub{font-size:13px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sub .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cc);margin-right:5px;vertical-align:1px}
-.rt{text-align:right;flex:0 0 auto}
-.rt b{display:block;font-variant-numeric:tabular-nums;font-size:16px}
-.rt small{font-size:12px;color:var(--muted)}
-.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--warn-l);color:var(--warn);margin-top:2px}
+.when{font-size:13px;color:var(--muted)}
+.row.soon .when{color:var(--warn);font-weight:700}
 .row.soon .av{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--warn)}
-.hint{font-size:12.5px;color:var(--muted);margin:10px 6px 0;text-align:center}
-.empty{text-align:center;padding:26px 18px 30px}
-.empty svg{width:180px;height:auto;margin:6px auto 4px;display:block}
-.empty h3{margin:6px 0 4px;font-size:19px}
-.empty p{margin:0 auto 16px;color:var(--ink2);font-size:14px;max-width:290px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:46px;padding:0 20px;border-radius:14px;font-weight:600;transition:transform .15s var(--ease),opacity .15s}
-.btn:active{transform:scale(.97)}
-.btn.pri{background:var(--pri);color:var(--pri-ink)}
+.amt{text-align:right;flex:0 0 auto}
+.amt b{display:block;font-variant-numeric:tabular-nums}
+.amt small{font-size:12px;color:var(--muted)}
+.del{flex:0 0 44px;height:44px;margin-right:6px;display:grid;place-items:center;color:var(--muted);border-radius:12px}
+.del:active{background:var(--card2)}
+.del svg{width:19px;height:19px}
+.tip{font-size:12.5px;color:var(--muted);text-align:center;margin:10px 0 0}
+.empty{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:22px 18px 20px;margin-top:14px}
+.empty h2{font-size:18px;margin:0 0 14px;text-align:center}
+.steps{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{display:flex;align-items:center;gap:12px;font-size:15.5px;font-weight:600}
+.steps b{flex:0 0 30px;height:30px;border-radius:50%;background:var(--pri-l);color:var(--pri-d);display:grid;place-items:center;font-size:15px}
+@media (prefers-color-scheme: dark){.steps b{color:var(--pri)}}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:50px;border-radius:15px;font-weight:700;transition:transform .15s var(--ease)}
 .btn.soft{background:var(--pri-l);color:var(--pri-d)}
 @media (prefers-color-scheme: dark){.btn.soft{color:var(--pri)}}
-.btn.block{width:100%}
+.btn.pri{background:var(--pri);color:var(--pri-ink)}
 .btn.danger{background:rgba(220,38,38,.1);color:var(--danger)}
-.stack{display:flex;flex-direction:column;gap:10px;max-width:280px;margin:0 auto}
-.fab{position:absolute;right:20px;bottom:calc(80px + var(--sab));width:58px;height:58px;border-radius:50%;background:var(--pri);color:var(--pri-ink);box-shadow:0 8px 22px rgba(13,148,136,.4);display:grid;place-items:center;z-index:5;transition:transform .2s var(--ease),opacity .2s}
-.fab:active{transform:scale(.92)}
-.fab svg{width:26px;height:26px}
-.fab.hide{transform:scale(.6);opacity:0;pointer-events:none}
-.tabbar{position:absolute;left:0;right:0;bottom:0;height:calc(64px + var(--sab));padding-bottom:var(--sab);display:flex;background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border-top:1px solid var(--line);z-index:6}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);transition:color .15s}
-.tab svg{width:25px;height:25px}
-.tab.on{color:var(--pri)}
-.seg{display:flex;background:var(--card2);border-radius:11px;padding:3px;gap:2px}
-.seg button{flex:1;height:34px;border-radius:9px;font-size:14px;font-weight:600;color:var(--ink2);transition:background .18s var(--ease),color .18s}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.36);opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s;z-index:10}
+.backdrop.on{opacity:1;visibility:visible;transition:opacity .2s}
+.sheet{position:fixed;left:50%;bottom:0;width:100%;max-width:430px;max-height:92dvh;overflow-y:auto;background:var(--bg);border-radius:22px 22px 0 0;padding:8px 16px calc(20px + var(--sab));transform:translate(-50%,105%);visibility:hidden;transition:transform .24s var(--ease),visibility 0s .24s;z-index:11}
+.sheet.on{transform:translate(-50%,0);visibility:visible;transition:transform .24s var(--ease)}
+.grab{width:38px;height:5px;border-radius:3px;background:rgba(127,127,127,.35);margin:2px auto 10px}
+.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.shead b{font-size:17px}
+.shead button{color:var(--ink2);font-size:16px;padding:6px 2px;min-width:44px;text-align:left}
+.shead span{min-width:44px}
+.fl{display:block;font-size:14px;font-weight:600;color:var(--ink2);margin:14px 4px 6px}
+.inp{width:100%;height:50px;border-radius:14px;border:1.5px solid transparent;background:var(--card);padding:0 14px;outline:none;-webkit-appearance:none;appearance:none;min-width:0}
+.inp:focus{border-color:var(--pri)}
+.money{display:flex;align-items:center;background:var(--card);border-radius:14px;border:1.5px solid transparent;padding-left:14px}
+.money:focus-within{border-color:var(--pri)}
+.money span{font-size:20px;font-weight:700;color:var(--muted);min-width:14px}
+.money .inp{border:0;font-size:22px;font-weight:700;background:none;padding-left:8px}
+.seg{display:flex;background:var(--card2);border-radius:12px;padding:3px;gap:2px}
+.seg button{flex:1;height:40px;border-radius:10px;font-weight:600;color:var(--ink2);transition:background .18s,color .18s}
 .seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 @media (prefers-color-scheme: dark){.seg button.on{background:#3A424B}}
-.panel{padding:16px}
-.donut-wrap{display:flex;align-items:center;gap:16px}
-.donut{flex:0 0 140px;width:140px;height:140px}
-.legend{flex:1;min-width:0;list-style:none;margin:0;padding:0;font-size:13.5px}
-.legend li{display:flex;align-items:center;gap:8px;padding:4px 0}
-.legend i{width:10px;height:10px;border-radius:3px;background:var(--cc);flex:0 0 auto}
-.legend span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.legend b{font-variant-numeric:tabular-nums;font-weight:600}
-.legend em{font-style:normal;color:var(--muted);font-size:12px;width:36px;text-align:right}
-.bars{width:100%;height:auto;display:block;margin-top:6px}
-.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.kpi{padding:12px 14px}
-.kpi span{font-size:12.5px;color:var(--muted)}
-.kpi b{display:block;font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.calhead{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 10px}
-.calhead b{font-size:17px}
-.iconbtn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--pri);background:var(--pri-l)}
-.iconbtn svg{width:18px;height:18px}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
-.grid .wd{font-size:12px;color:var(--muted);font-weight:600;padding:2px 0 6px}
-.day{position:relative;height:46px;border-radius:12px;font-size:15px;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;transition:background .15s}
-.day.out{visibility:hidden}
-.day.today .n{background:var(--pri);color:var(--pri-ink);border-radius:50%;width:26px;height:26px;display:grid;place-items:center;margin-top:-3px}
-.day.sel{background:var(--pri-l)}
-.day.has .n{font-weight:700}
-.dots{display:flex;gap:3px;margin-top:3px;height:6px}
-.dots i{width:6px;height:6px;border-radius:50%;background:var(--cc)}
-.group{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
-.item{display:flex;align-items:center;gap:12px;padding:13px 16px;min-height:52px;width:100%;text-align:left;position:relative}
-.item+.item::before{content:"";position:absolute;left:56px;right:0;top:0;border-top:1px solid var(--line)}
-.item .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;background:var(--ic,var(--pri));flex:0 0 auto}
-.item .ic svg{width:18px;height:18px}
-.item .tx{flex:1;min-width:0}
-.item .tx small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35;margin-top:1px}
-.item .chev{color:var(--muted);width:16px;height:16px;flex:0 0 auto}
-.item.red{color:var(--danger)}
-.item:active{background:var(--card2)}
-.note{font-size:13.5px;color:var(--ink2);padding:14px 16px;line-height:1.6}
-.note p{margin:0 0 8px}.note p:last-child{margin:0}
-.foot{text-align:center;font-size:12px;color:var(--muted);margin:18px 0 0}
-.foot a{color:var(--pri);text-decoration:none}
-.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.36);opacity:0;visibility:hidden;transition:opacity .22s var(--ease),visibility 0s .22s;z-index:10}
-.backdrop.on{opacity:1;visibility:visible;transition:opacity .22s var(--ease)}
-.sheet{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow-y:auto;overflow-x:hidden;background:var(--page);border-radius:22px 22px 0 0;padding:8px 16px calc(18px + var(--sab));transform:translateY(105%);transition:transform .25s var(--ease),visibility 0s .25s;visibility:hidden;z-index:11}
-.sheet.on{transform:none;visibility:visible;transition:transform .25s var(--ease)}
-.grab{width:38px;height:5px;border-radius:3px;background:var(--line);margin:2px auto 10px;background:rgba(127,127,127,.35)}
-.shead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.shead b{font-size:17px}
-.shead button{color:var(--pri);font-weight:600;font-size:16px;padding:6px 2px;min-width:44px}
-.shead .x{color:var(--ink2);text-align:left}
-.shead .ok{text-align:right}
-.fl{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:14px 4px 6px}
-.inp{width:100%;height:48px;border-radius:13px;border:1.5px solid transparent;background:var(--card);padding:0 14px;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none;min-width:0}
-.inp:focus{border-color:var(--pri)}
-.amt-row{display:flex;gap:8px}
-.amt-row .inp:first-child{flex:1;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
-.amt-row select{flex:0 0 108px}
-select.inp{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 21px,calc(100% - 13px) 21px;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
-input[type=date].inp{display:flex;align-items:center}
-.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cat{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;height:68px;padding:0 6px;font-size:13px!important;border-radius:13px;background:var(--card);font-size:14px;font-weight:600;border:1.5px solid transparent;transition:border-color .15s,background .15s;min-width:0}
-.cat i{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--cc);color:#fff;flex:0 0 auto}
-.cat i svg{width:17px;height:17px}
-.cat span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.cat.on{border-color:var(--cc);background:color-mix(in srgb,var(--cc) 10%,var(--card))}
-.err{color:var(--danger);font-size:13.5px;min-height:20px;margin:10px 4px 0}
-.prev{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);background:var(--pri-l);border-radius:12px;padding:10px 14px;margin-top:14px}
-.prev b{color:var(--pri-d);font-variant-numeric:tabular-nums}
-@media (prefers-color-scheme: dark){.prev b{color:var(--pri)}}
-.asheet .opt{display:block;width:100%;height:54px;background:var(--card);font-size:17px;color:var(--pri);font-weight:500}
-.asheet .og{border-radius:16px;overflow:hidden}
-.asheet .og .opt+.opt{border-top:1px solid var(--line)}
-.asheet .opt.red{color:var(--danger)}
-.asheet .ttl{background:var(--card);text-align:center;font-size:13px;color:var(--muted);padding:12px 16px;border-bottom:1px solid var(--line)}
-.asheet .cancel{margin-top:8px;border-radius:16px;font-weight:700}
-.toast{position:absolute;left:50%;bottom:calc(92px + var(--sab));transform:translate(-50%,16px);background:rgba(17,24,39,.92);color:#fff;padding:10px 14px 10px 16px;border-radius:14px;font-size:14px;display:flex;gap:14px;align-items:center;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s var(--ease),visibility 0s .2s;z-index:20;max-width:calc(100% - 32px);width:max-content}
-@media (prefers-color-scheme: dark){.toast{background:rgba(55,65,81,.96)}}
+.opt{color:var(--muted);font-weight:500;font-size:13px}
+details{margin-top:14px}
+summary{list-style:none;cursor:pointer;color:var(--pri);font-weight:600;font-size:14px;padding:6px 4px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:" ▾"}
+details[open] summary::after{content:" ▴"}
+.err{color:var(--danger);font-size:14px;min-height:20px;margin:10px 4px 4px}
+.menu{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.mi{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:10px 16px;text-align:left;position:relative}
+.mi+.mi::before{content:"";position:absolute;left:16px;right:0;top:0;border-top:1px solid var(--line)}
+.mi small{display:block;color:var(--muted);font-size:12.5px}
+.mi.red{color:var(--danger)}
+.mi:active{background:var(--card2)}
+.note{font-size:13px;color:var(--muted);margin:14px 4px 0;line-height:1.6}
+.toast{position:fixed;left:50%;bottom:calc(24px + var(--sab));transform:translate(-50%,16px);background:rgba(17,24,39,.94);color:#fff;padding:11px 14px 11px 16px;border-radius:14px;font-size:14px;display:flex;gap:16px;align-items:center;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s var(--ease),visibility 0s .2s;z-index:20;width:max-content;max-width:calc(100% - 32px)}
+@media (prefers-color-scheme: dark){.toast{background:rgba(55,65,81,.97)}}
 .toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .2s,transform .2s var(--ease)}
 .toast button{color:#5EEAD4;font-weight:700}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -191,120 +116,77 @@ input[type=date].inp{display:flex;align-items:center}
 </style>
 </head>
 <body>
-<div class="shell" id="shell">
-  <main class="views">
-    <section class="view on" id="v-subs" aria-labelledby="t-subs">
-      <div class="top"><div><div class="eyebrow" id="todayLbl"></div><h1 id="t-subs" data-i18n="tSubs">订阅</h1></div></div>
-      <div class="hero" id="hero"></div>
-      <div id="listWrap">
-        <h2><span data-i18n="all">全部订阅</span><small id="listMeta"></small></h2>
-        <ul class="list" id="list"></ul>
-        <p class="hint" data-i18n="swipeHint">左滑或长按可编辑、删除</p>
-      </div>
-      <div class="empty card" id="empty" hidden>
-        <svg viewBox="0 0 200 140" aria-hidden="true">
-          <ellipse cx="100" cy="128" rx="70" ry="7" fill="currentColor" opacity=".06"/>
-          <rect x="38" y="34" width="112" height="78" rx="14" fill="#0D9488" opacity=".18" transform="rotate(-8 94 73)"/>
-          <rect x="50" y="26" width="112" height="84" rx="14" fill="var(--card)" stroke="#0D9488" stroke-width="2.5"/>
-          <rect x="50" y="26" width="112" height="22" rx="14" fill="#0D9488"/><rect x="50" y="38" width="112" height="10" fill="#0D9488"/>
-          <circle cx="72" cy="20" r="4" fill="#0F766E"/><rect x="70" y="14" width="4" height="16" rx="2" fill="#0F766E"/>
-          <rect x="138" y="14" width="4" height="16" rx="2" fill="#0F766E"/>
-          <circle cx="74" cy="68" r="9" fill="#E11D48"/><rect x="90" y="63" width="48" height="5" rx="2.5" fill="#CBD5E1"/><rect x="90" y="72" width="30" height="4" rx="2" fill="#E2E8F0"/>
-          <circle cx="74" cy="92" r="9" fill="#0EA5E9"/><rect x="90" y="87" width="40" height="5" rx="2.5" fill="#CBD5E1"/><rect x="90" y="96" width="24" height="4" rx="2" fill="#E2E8F0"/>
-          <circle cx="160" cy="104" r="20" fill="#F59E0B"/><path d="M160 94v10l7 5" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        </svg>
-        <h3 data-i18n="emptyT">还没有订阅</h3>
-        <p data-i18n="emptyP">把视频、音乐、网盘、软件会员记下来，自动算出每月和每年花多少，快扣费时提醒你。</p>
-        <div class="stack">
-          <button class="btn pri" type="button" id="emptyAdd" data-i18n="addFirst">添加第一个订阅</button>
-          <button class="btn soft" type="button" id="sampleBtn" data-i18n="addSample">一键添加示例</button>
-        </div>
-      </div>
-    </section>
+<div class="shell">
+  <div class="top"><h1 data-i18n="title">订阅清单</h1>
+    <button class="gear" type="button" id="menuBtn" data-i18n-aria="more" aria-label="更多"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></div>
+  <p class="lead" data-i18n="lead">记下每月自动扣费的订阅，看看每月花多少钱</p>
 
-    <section class="view" id="v-stats" aria-labelledby="t-stats">
-      <div class="top"><div><div class="eyebrow" data-i18n="statsEy">按月均折算</div><h1 id="t-stats" data-i18n="tStats">统计</h1></div></div>
-      <div class="seg" id="curSeg" style="margin-bottom:12px"></div>
-      <div class="kpis"><div class="card kpi"><span data-i18n="avgM">月均花费</span><b id="kM">—</b></div><div class="card kpi"><span data-i18n="sumY">一年合计</span><b id="kY">—</b></div></div>
-      <h2><span data-i18n="byCat">分类占比</span></h2>
-      <div class="card panel"><div class="donut-wrap"><svg class="donut" id="donut" viewBox="0 0 140 140" role="img"></svg><ul class="legend" id="legend"></ul></div></div>
-      <h2><span data-i18n="next12">未来 12 个月扣费</span><small data-i18n="estimate">预估</small></h2>
-      <div class="card panel"><svg class="bars" id="bars" viewBox="0 0 340 190" role="img"></svg></div>
-      <p class="hint" data-i18n="statsHint">不同币种分开统计，不做汇率换算。</p>
-    </section>
+  <div class="hero" id="hero">
+    <div class="lbl" data-i18n="monthly">每月合计</div>
+    <div class="big" id="total">¥0</div>
+    <div class="small" id="yearly"></div>
+    <div class="extra" id="extra" hidden></div>
+  </div>
 
-    <section class="view" id="v-cal" aria-labelledby="t-cal">
-      <div class="top"><div><div class="eyebrow" data-i18n="calEy">扣费日</div><h1 id="t-cal" data-i18n="tCal">日历</h1></div></div>
-      <div class="card panel">
-        <div class="calhead">
-          <button class="iconbtn" type="button" id="calPrev" aria-label="prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <b id="calTitle"></b>
-          <button class="iconbtn" type="button" id="calNext" aria-label="next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-        </div>
-        <div class="grid" id="calGrid"></div>
-      </div>
-      <h2><span id="calListT"></span><small id="calSum"></small></h2>
-      <ul class="list" id="calList"></ul>
-    </section>
+  <button class="add" type="button" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="add">添加订阅</span></button>
 
-    <section class="view" id="v-set" aria-labelledby="t-set">
-      <div class="top"><div><div class="eyebrow" data-i18n="setEy">数据只在本机</div><h1 id="t-set" data-i18n="tSet">设置</h1></div></div>
-      <h2><span data-i18n="language">语言</span></h2>
-      <div class="seg" id="langSeg"><button type="button" data-l="zh">中文</button><button type="button" data-l="en">English</button></div>
-      <h2><span data-i18n="remind">提醒与备份</span></h2>
-      <div class="group">
-        <button class="item" type="button" id="icsBtn" style="--ic:#F59E0B"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="tx"><span data-i18n="ics">导出日历提醒 (.ics)</span><small data-i18n="icsHint">扣费前 3 天上午 9 点提醒，用手机或电脑日历打开导入</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-        <button class="item" type="button" id="expBtn" style="--ic:#0D9488"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><span class="tx"><span data-i18n="exp">导出备份 (JSON)</span><small data-i18n="expHint">换手机或清浏览器数据前先导出</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-        <button class="item" type="button" id="impBtn" style="--ic:#2563EB"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></svg></span><span class="tx"><span data-i18n="imp">导入备份</span><small data-i18n="impHint">和现有清单合并，同一条以备份为准</small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-      </div>
-      <input type="file" id="impFile" accept=".json,application/json" class="sr" tabindex="-1" aria-hidden="true">
-      <h2><span data-i18n="app">App</span></h2>
-      <div class="group">
-        <button class="item" type="button" id="installBtn" style="--ic:#8B5CF6"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span><span class="tx"><span data-i18n="install">添加到主屏幕</span><small id="installHint"></small></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></button>
-        <button class="item red" type="button" id="clearBtn" style="--ic:#DC2626"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></span><span class="tx" data-i18n="clear">清空全部数据</span></button>
-      </div>
-      <h2><span data-i18n="privacy">隐私说明</span></h2>
-      <div class="group note" id="privacyNote"></div>
-      <p class="foot"><span data-i18n="footer">订阅清单 v2 · 开源 MIT · 无广告无统计</span><br><a href="https://github.com/wxxxwxxxshsb-wq/daily-life-hacks/tree/main/tools/subscription-tracker" target="_blank" rel="noopener" data-i18n="source">查看源码</a></p>
-    </section>
-  </main>
+  <section class="empty" id="empty" hidden>
+    <h2 data-i18n="howTo">怎么用？</h2>
+    <ol class="steps">
+      <li><b>1</b><span data-i18n="s1">点“添加订阅”</span></li>
+      <li><b>2</b><span data-i18n="s2">填名称和金额</span></li>
+      <li><b>3</b><span data-i18n="s3">看每月合计</span></li>
+    </ol>
+    <button class="btn soft" type="button" id="sampleBtn" data-i18n="sample">试试示例</button>
+  </section>
 
-  <button class="fab" type="button" id="fab" aria-label="add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-
-  <nav class="tabbar" id="tabbar">
-    <button class="tab on" type="button" data-v="subs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h6"/></svg><span data-i18n="tSubs">订阅</span></button>
-    <button class="tab" type="button" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span data-i18n="tStats">统计</span></button>
-    <button class="tab" type="button" data-v="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.4" fill="currentColor"/></svg><span data-i18n="tCal">日历</span></button>
-    <button class="tab" type="button" data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="tSet">设置</span></button>
-  </nav>
-
-  <div class="backdrop" id="backdrop"></div>
-
-  <form class="sheet" id="sheet" novalidate autocomplete="off" role="dialog" aria-modal="true" aria-labelledby="formTitle">
-    <div class="grab"></div>
-    <div class="shead"><button type="button" class="x" id="sheetCancel" data-i18n="cancel">取消</button><b id="formTitle"></b><button type="submit" class="ok" id="sheetSave" data-i18n="save">保存</button></div>
-    <input type="hidden" id="fId">
-    <label class="fl" for="fName" data-i18n="name">名称</label>
-    <input class="inp" id="fName" maxlength="60" enterkeyhint="next" data-i18n-ph="namePh">
-    <span class="fl" data-i18n="category">分类</span>
-    <div class="cats" id="fCats" role="radiogroup"></div>
-    <label class="fl" for="fAmount" data-i18n="amount">金额</label>
-    <div class="amt-row"><input class="inp" id="fAmount" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00"><select class="inp" id="fCurrency" aria-label="currency"></select></div>
-    <span class="fl" data-i18n="cycle">扣费周期</span>
-    <div class="seg" id="fCycle" role="radiogroup"><button type="button" data-c="month" data-i18n="month">每月</button><button type="button" data-c="quarter" data-i18n="quarter">每季度</button><button type="button" data-c="year" data-i18n="year">每年</button></div>
-    <label class="fl" for="fNext" data-i18n="next">下次扣费日</label>
-    <input class="inp" id="fNext" type="date">
-    <label class="fl" for="fNote" data-i18n="note">备注（可选）</label>
-    <input class="inp" id="fNote" maxlength="120" data-i18n-ph="notePh">
-    <div class="prev" id="fPrev" hidden></div>
-    <div class="err" id="formErr" role="alert"></div>
-    <button class="btn pri block" type="submit" id="saveBtn" style="margin-top:4px" data-i18n="save">保存</button>
-    <button class="btn danger block" type="button" id="delInSheet" style="margin-top:10px" data-i18n="del" hidden>删除</button>
-  </form>
-
-  <div class="sheet asheet" id="asheet" role="dialog" aria-modal="true"></div>
-  <div class="toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastAct" hidden></button></div>
+  <section id="listWrap" hidden>
+    <div class="sect"><span data-i18n="mine">我的订阅</span><small id="count"></small></div>
+    <ul class="list" id="list"></ul>
+    <p class="tip" data-i18n="tip">点一下可修改</p>
+  </section>
 </div>
+
+<div class="backdrop" id="backdrop"></div>
+
+<form class="sheet" id="sheet" novalidate autocomplete="off" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+  <div class="grab"></div>
+  <div class="shead"><button type="button" id="cancelBtn" data-i18n="cancel">取消</button><b id="formTitle"></b><span></span></div>
+  <input type="hidden" id="fId">
+  <label class="fl" for="fName" data-i18n="name">名称</label>
+  <input class="inp" id="fName" maxlength="60" data-i18n-ph="namePh">
+  <label class="fl" for="fAmount" data-i18n="amount">金额</label>
+  <div class="money"><span id="curSym">¥</span><input class="inp" id="fAmount" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0"></div>
+  <span class="fl" data-i18n="cycle">多久扣一次</span>
+  <div class="seg" id="fCycle"><button type="button" data-c="month" data-i18n="month">每月</button><button type="button" data-c="quarter" data-i18n="quarter" hidden>每季度</button><button type="button" data-c="year" data-i18n="year">每年</button></div>
+  <label class="fl" for="fNext"><span data-i18n="date">扣费日期</span> <span class="opt" data-i18n="optional">（可不改）</span></label>
+  <input class="inp" id="fNext" type="date">
+  <details id="moreBox"><summary data-i18n="moreOpts">更多选项</summary>
+    <label class="fl" for="fCurrency" data-i18n="currency">币种</label>
+    <select class="inp" id="fCurrency"></select>
+  </details>
+  <div class="err" id="formErr" role="alert"></div>
+  <button class="btn pri" type="submit" id="saveBtn" data-i18n="save">保存</button>
+  <button class="btn danger" type="button" id="delInSheet" style="margin-top:10px" data-i18n="delete" hidden>删除</button>
+</form>
+
+<div class="sheet" id="menu" role="dialog" aria-modal="true">
+  <div class="grab"></div>
+  <div class="shead"><button type="button" id="menuClose" data-i18n="close">关闭</button><b data-i18n="more">更多</b><span></span></div>
+  <span class="fl" data-i18n="language">语言</span>
+  <div class="seg" id="langSeg"><button type="button" data-l="zh">中文</button><button type="button" data-l="en">English</button></div>
+  <span class="fl" data-i18n="tools">提醒与备份</span>
+  <div class="menu">
+    <button class="mi" type="button" id="icsBtn"><span><span data-i18n="ics">导出日历提醒</span><small data-i18n="icsHint">扣费前 3 天上午 9 点提醒，用手机日历打开</small></span></button>
+    <button class="mi" type="button" id="expBtn"><span><span data-i18n="exp">导出备份</span><small data-i18n="expHint">换手机前先导出</small></span></button>
+    <button class="mi" type="button" id="impBtn"><span><span data-i18n="imp">导入备份</span><small data-i18n="impHint">和现有清单合并</small></span></button>
+  </div>
+  <div class="menu" style="margin-top:14px"><button class="mi red" type="button" id="clearBtn" data-i18n="clear">清空全部</button></div>
+  <p class="note" data-i18n="privacy">数据只存在这台设备的浏览器里，不上传、不注册。换手机或清浏览器数据前先导出备份；iPhone 的 Safari 可能清掉长期没打开的网站数据。</p>
+  <input type="file" id="impFile" accept=".json,application/json" class="sr" tabindex="-1" aria-hidden="true">
+</div>
+
+<div class="toast" id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastAct" hidden></button></div>
 <script src="core.js"></script>
 <script src="app.js"></script>
 </body>

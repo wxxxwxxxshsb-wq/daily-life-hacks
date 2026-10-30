@@ -1,5 +1,5 @@
 /* 订阅清单 service worker：缓存本地文件，离线可用。不发任何外部请求。 */
-var CACHE = 'subtracker-v2-1';
+var CACHE = 'subtracker-v3-1';
 var FILES = ['./', 'index.html', 'core.js', 'app.js', 'manifest.json', 'icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));

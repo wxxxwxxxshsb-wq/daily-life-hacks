@@ -1,7 +1,7 @@
 {
   "name": "订阅清单 · Subscription Tracker",
   "short_name": "订阅清单",
-  "description": "记下会员和订阅，算本月应付、一年合计，扣费前提醒。数据只存在本机。",
+  "description": "记下每月自动扣费的订阅，看看每月花多少钱。数据只存在本机。",
   "id": "./",
   "start_url": "./",
   "scope": "./",
