@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>订阅清单｜一年在会员上花多少钱 · Subscription Tracker</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="记下你的会员和订阅，自动算每月、每年总花费，临近扣费高亮，导出日历提醒。数据只存在你自己的浏览器里，不上传。">
+<style>
+  :root{
+    --bg:#f3f7f6; --card:#ffffff; --ink:#1c2733; --muted:#64748b; --line:#dfe7e5;
+    --brand:#0d9488; --brand-d:#0f766e; --brand-l:#e6f5f3; --warn:#b45309; --warn-l:#fff7e6;
+    --hot:#c2410c; --hot-l:#fff1e8; --bad:#b91c1c; --radius:16px;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.55;-webkit-text-size-adjust:100%}
+  .wrap{max-width:820px;margin:0 auto;padding:12px 14px 40px}
+  .top{display:flex;justify-content:flex-end}
+  .lang{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit}
+  header{text-align:center;padding:4px 4px 6px}
+  header h1{font-size:24px;margin:0 0 4px;letter-spacing:1px}
+  header p{margin:0;color:var(--muted);font-size:14px}
+  .notice{background:var(--warn-l);border:1px solid #fde3b0;color:var(--warn);border-radius:12px;padding:10px 14px;font-size:14px;margin:12px 0}
+  .card{background:var(--card);border-radius:var(--radius);padding:16px;margin-top:14px;box-shadow:0 4px 18px rgba(20,60,60,.06)}
+  .card h2{font-size:17px;margin:0 0 8px}
+  .sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
+  .stat{background:var(--brand-l);border-radius:12px;padding:10px 12px}
+  .stat .lbl{font-size:12px;color:var(--muted)}
+  .stat .val{font-size:20px;font-weight:800;color:var(--brand-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stat .val small{font-size:13px;font-weight:600}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px}
+  label{display:block;font-size:13px;font-weight:600;margin:10px 0 5px}
+  input,select,textarea{width:100%;padding:11px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:#fbfdfd;color:var(--ink);font-family:inherit}
+  input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+  .grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{display:inline-block;padding:11px 16px;border:0;border-radius:12px;background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn.ghost{background:var(--card);color:var(--brand-d);border:1px solid var(--brand)}
+  .btn.small{padding:6px 10px;font-size:13px;border-radius:9px}
+  .btn.danger{background:var(--card);color:var(--bad);border:1px solid #f3c4c4}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .err{color:var(--bad);font-size:14px;margin-top:8px;min-height:1px}
+  .msg{color:var(--brand-d);font-size:14px;margin-top:8px;min-height:1px}
+  ul.list{list-style:none;margin:0;padding:0}
+  .item{display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);padding:11px 2px}
+  .item:first-child{border-top:0}
+  .item .main{flex:1;min-width:0}
+  .item .name{font-weight:700;font-size:16px;word-break:break-word}
+  .item .meta{font-size:13px;color:var(--muted)}
+  .item .note{font-size:12px;color:var(--muted);word-break:break-word}
+  .item .amt{text-align:right;white-space:nowrap}
+  .item .amt b{font-size:16px}
+  .item .amt div{font-size:12px;color:var(--muted)}
+  .item .ops{display:flex;flex-direction:column;gap:5px}
+  .item.soon{background:var(--hot-l);border-radius:12px;padding-left:10px;padding-right:10px;border-top-color:transparent}
+  .badge{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--hot);border-radius:8px;padding:1px 7px;margin-left:6px;vertical-align:2px}
+  .empty{color:var(--muted);text-align:center;padding:18px 0;font-size:14px}
+  .privacy{font-size:13px;color:#334155;background:#f6faf9;border-left:3px solid var(--brand);padding:10px 12px;border-radius:6px}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px}
+  .sr{position:absolute;left:-9999px}
+  @media (max-width:560px){
+    .grid{grid-template-columns:1fr 1fr}
+    .grid .full{grid-column:1/-1}
+    .item{flex-wrap:wrap}
+    .item .ops{flex-direction:row;width:100%;justify-content:flex-end}
+    header h1{font-size:21px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><button class="lang" id="langBtn" type="button">English</button></div>
+  <header>
+    <h1 data-i18n="title">订阅清单</h1>
+    <p data-i18n="subtitle">一年在会员和订阅上花了多少钱？记下来，快扣费时提醒你</p>
+  </header>
+
+  <div class="notice" id="privacyTop" data-i18n="privacy">数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。</div>
+
+  <section class="card" aria-labelledby="sumTitle">
+    <h2 id="sumTitle" data-i18n="summary">合计</h2>
+    <div class="sum" id="summary"></div>
+    <div class="hint" data-i18n="sumHint">按周期折算：季付 ÷ 3 = 每月，年付 ÷ 12 = 每月。不同币种分开合计，不做汇率换算。</div>
+  </section>
+
+  <section class="card" aria-labelledby="listTitle">
+    <h2 id="listTitle" data-i18n="list">我的订阅（按每月金额从高到低）</h2>
+    <ul class="list" id="list"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="formTitle">
+    <h2 id="formTitle" data-i18n="add">添加订阅</h2>
+    <form id="form" autocomplete="off" novalidate>
+      <input type="hidden" id="fId">
+      <div class="grid">
+        <div class="full"><label for="fName" data-i18n="name">名称</label><input id="fName" maxlength="60" data-i18n-ph="namePh" placeholder="例如：视频会员、网盘、AI 助手"></div>
+        <div><label for="fAmount" data-i18n="amount">金额</label><input id="fAmount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="25"></div>
+        <div><label for="fCurrency" data-i18n="currency">币种</label>
+          <select id="fCurrency">
+            <option value="CNY">CNY ¥</option><option value="USD">USD $</option><option value="EUR">EUR €</option>
+            <option value="HKD">HKD</option><option value="TWD">TWD</option><option value="JPY">JPY</option>
+            <option value="GBP">GBP £</option><option value="CAD">CAD</option><option value="AUD">AUD</option>
+          </select></div>
+      </div>
+      <div class="grid2">
+        <div><label for="fCycle" data-i18n="cycle">扣费周期</label>
+          <select id="fCycle">
+            <option value="month" data-i18n="month">每月</option>
+            <option value="quarter" data-i18n="quarter">每季度</option>
+            <option value="year" data-i18n="year">每年</option>
+          </select></div>
+        <div><label for="fNext" data-i18n="next">下次扣费日</label><input id="fNext" type="date"></div>
+      </div>
+      <label for="fNote" data-i18n="note">备注（可选）</label>
+      <input id="fNote" maxlength="120" data-i18n-ph="notePh" placeholder="例如：用哪个手机号开的、怎么取消">
+      <div class="err" id="formErr" role="alert"></div>
+      <div class="actions">
+        <button class="btn" type="submit" id="saveBtn" data-i18n="save">添加</button>
+        <button class="btn ghost" type="button" id="cancelEdit" hidden data-i18n="cancel">取消编辑</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card" aria-labelledby="dataTitle">
+    <h2 id="dataTitle" data-i18n="data">提醒与备份</h2>
+    <div class="actions" style="margin-top:4px">
+      <button class="btn" type="button" id="icsBtn" data-i18n="ics">导出日历提醒 (.ics)</button>
+      <button class="btn ghost" type="button" id="jsonBtn" data-i18n="exportJson">导出备份 (JSON)</button>
+      <button class="btn ghost" type="button" id="importBtn" data-i18n="importJson">导入备份</button>
+      <input type="file" id="importFile" accept=".json,application/json" class="sr" aria-hidden="true" tabindex="-1">
+      <button class="btn danger" type="button" id="clearBtn" data-i18n="clear">清空全部</button>
+    </div>
+    <div class="msg" id="dataMsg" role="status"></div>
+    <p class="hint" data-i18n="icsHint">.ics 文件可以用手机或电脑的日历打开导入：每个订阅按周期重复，扣费日前 3 天上午 9 点提醒。是否弹出提醒取决于你的日历 App。</p>
+    <p class="privacy" data-i18n="privacy2">隐私：本页面没有服务器、不联网、没有任何统计脚本。数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。导入备份会和现有清单合并（同一条以备份为准）。</p>
+  </section>
+
+  <footer data-i18n="footer">一图小百科 · 数据只存在你的浏览器里，不上传 · MIT License</footer>
+</div>
+
+<script>
+// @@CORE-START
+(function (root) {
+  'use strict';
+  var CYCLES = { month: 1, quarter: 3, year: 12 };
+
+  function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
+  function parseDate(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+    if (!m) return null;
+    var y = +m[1], mo = +m[2], d = +m[3];
+    var dt = new Date(Date.UTC(y, mo - 1, d));
+    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+    return { y: y, m: mo, d: d };
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmtDate(o) { return o.y + '-' + pad(o.m) + '-' + pad(o.d); }
+  function dayNum(o) { return Math.floor(Date.UTC(o.y, o.m - 1, o.d) / 86400000); }
+  function daysInMonth(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+
+  // 从锚定日 anchor 加 k 个周期（按月加，月末自动取当月最后一天）
+  function addMonths(anchor, months) {
+    var total = anchor.y * 12 + (anchor.m - 1) + months;
+    var y = Math.floor(total / 12), m = total % 12 + 1;
+    return { y: y, m: m, d: Math.min(anchor.d, daysInMonth(y, m)) };
+  }
+
+  // 下次扣费日：如果填写的日期已经过去，按周期顺延到今天或之后
+  function nextCharge(dateStr, cycle, todayStr) {
+    var a = parseDate(dateStr), t = parseDate(todayStr);
+    var step = CYCLES[cycle];
+    if (!a || !t || !step) return null;
+    var k = 0, cur = a;
+    while (dayNum(cur) < dayNum(t) && k < 10000) { k++; cur = addMonths(a, step * k); }
+    return fmtDate(cur);
+  }
+
+  function daysUntil(dateStr, todayStr) {
+    var a = parseDate(dateStr), t = parseDate(todayStr);
+    if (!a || !t) return null;
+    return dayNum(a) - dayNum(t);
+  }
+
+  function monthly(amount, cycle) { return round2(Number(amount) / CYCLES[cycle]); }
+  function yearly(amount, cycle) { return round2(Number(amount) * 12 / CYCLES[cycle]); }
+
+  // 按币种合计
+  function totals(subs) {
+    var by = {};
+    subs.forEach(function (s) {
+      var c = s.currency;
+      if (!by[c]) by[c] = { currency: c, monthly: 0, yearly: 0, count: 0 };
+      by[c].monthly += Number(s.amount) / CYCLES[s.cycle];
+      by[c].yearly += Number(s.amount) * 12 / CYCLES[s.cycle];
+      by[c].count++;
+    });
+    return Object.keys(by).map(function (k) {
+      var o = by[k]; o.monthly = round2(o.monthly); o.yearly = round2(o.yearly); return o;
+    }).sort(function (x, y) { return y.yearly - x.yearly; });
+  }
+
+  function sortByMonthly(subs) {
+    return subs.slice().sort(function (a, b) {
+      return monthly(b.amount, b.cycle) - monthly(a.amount, a.cycle) || String(a.name).localeCompare(String(b.name));
+    });
+  }
+
+  function validate(s) {
+    if (!s || typeof s !== 'object') return 'bad';
+    if (typeof s.name !== 'string' || !s.name.trim() || s.name.length > 60) return 'name';
+    var a = Number(s.amount);
+    if (!isFinite(a) || a <= 0 || a > 1e9) return 'amount';
+    if (typeof s.currency !== 'string' || !/^[A-Z]{3}$/.test(s.currency)) return 'currency';
+    if (!CYCLES[s.cycle]) return 'cycle';
+    if (!parseDate(s.next)) return 'next';
+    if (s.note != null && (typeof s.note !== 'string' || s.note.length > 120)) return 'note';
+    return '';
+  }
+
+  function clean(s, id) {
+    return { id: String(s.id || id), name: s.name.trim(), amount: round2(Number(s.amount)), currency: s.currency,
+      cycle: s.cycle, next: s.next, note: (s.note || '').trim() };
+  }
+
+  // 解析 JSON 备份：支持 {app, version, subscriptions:[...]} 或直接数组
+  function parseBackup(text) {
+    var data;
+    try { data = JSON.parse(text); } catch (e) { return { ok: false, error: 'json' }; }
+    var arr = Array.isArray(data) ? data : (data && Array.isArray(data.subscriptions) ? data.subscriptions : null);
+    if (!arr) return { ok: false, error: 'format' };
+    var good = [], bad = 0;
+    arr.forEach(function (s, i) {
+      if (validate(s)) { bad++; return; }
+      good.push(clean(s, 'imp-' + i + '-' + Date.now().toString(36)));
+    });
+    return { ok: true, items: good, skipped: bad };
+  }
+
+  function merge(existing, incoming) {
+    var map = {}, order = [];
+    existing.forEach(function (s) { map[s.id] = s; order.push(s.id); });
+    incoming.forEach(function (s) { if (!map[s.id]) order.push(s.id); map[s.id] = s; });
+    return order.map(function (id) { return map[id]; });
+  }
+
+  function makeBackup(subs, nowIso) {
+    return JSON.stringify({ app: 'daily-life-hacks/subscription-tracker', version: 1, exportedAt: nowIso, subscriptions: subs }, null, 2);
+  }
+
+  // ---- iCalendar (RFC 5545) ----
+  function icsEscape(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  function utf8len(ch) { var c = ch.codePointAt(0); return c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4; }
+  function fold(line) {
+    var out = [], cur = '', len = 0, limit = 75;
+    Array.from(line).forEach(function (ch) {
+      var l = utf8len(ch);
+      if (len + l > limit) { out.push(cur); cur = ' '; len = 1; limit = 75; }
+      cur += ch; len += l;
+    });
+    out.push(cur);
+    return out.join('\r\n');
+  }
+  function rrule(cycle, d) {
+    if (cycle === 'year') return 'RRULE:FREQ=YEARLY';
+    var iv = cycle === 'quarter' ? ';INTERVAL=3' : '';
+    // 29/30/31 号扣费：没有这一天的月份取月末
+    if (d >= 29) return 'RRULE:FREQ=MONTHLY' + iv + ';BYMONTHDAY=' + d + ',-1;BYSETPOS=1';
+    return 'RRULE:FREQ=MONTHLY' + iv;
+  }
+  function buildICS(subs, opts) {
+    opts = opts || {};
+    var today = opts.today, stamp = opts.stamp || '20260101T000000Z', L = opts.lang === 'en' ? 'en' : 'zh';
+    var cyc = { zh: { month: '每月', quarter: '每季度', year: '每年' }, en: { month: 'monthly', quarter: 'quarterly', year: 'yearly' } }[L];
+    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//daily-life-hacks//subscription-tracker//' + (L === 'en' ? 'EN' : 'ZH'),
+      'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:' + icsEscape(L === 'en' ? 'Subscriptions' : '订阅扣费提醒')];
+    subs.forEach(function (s) {
+      var nx = today ? nextCharge(s.next, s.cycle, today) : s.next;
+      var p = parseDate(nx);
+      var endDay = new Date(Date.UTC(p.y, p.m - 1, p.d + 1));
+      var endStr = endDay.getUTCFullYear() + pad(endDay.getUTCMonth() + 1) + pad(endDay.getUTCDate());
+      var money = s.amount + ' ' + s.currency;
+      var summary = L === 'en' ? ('Renewal: ' + s.name + ' (' + money + ')') : ('扣费：' + s.name + '（' + money + '）');
+      var desc = (L === 'en' ? 'Billed ' : '扣费周期：') + cyc[s.cycle] + (L === 'en' ? ', ' : '，') + money +
+        (s.note ? (L === 'en' ? '\nNote: ' : '\n备注：') + s.note : '') +
+        (L === 'en' ? '\nCancel before this date if you no longer need it.' : '\n不想续就在这天之前取消。');
+      lines.push('BEGIN:VEVENT', 'UID:' + icsEscape(s.id) + '@subscription-tracker.daily-life-hacks', 'DTSTAMP:' + stamp,
+        'DTSTART;VALUE=DATE:' + nx.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + endStr, rrule(s.cycle, p.d),
+        'SUMMARY:' + icsEscape(summary), 'DESCRIPTION:' + icsEscape(desc), 'TRANSP:TRANSPARENT',
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(summary), 'TRIGGER:-PT63H', 'END:VALARM', 'END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    return lines.map(fold).join('\r\n') + '\r\n';
+  }
+
+  root.SubCalc = { CYCLES: CYCLES, round2: round2, parseDate: parseDate, nextCharge: nextCharge, daysUntil: daysUntil,
+    monthly: monthly, yearly: yearly, totals: totals, sortByMonthly: sortByMonthly, validate: validate, clean: clean,
+    parseBackup: parseBackup, merge: merge, makeBackup: makeBackup, buildICS: buildICS, fold: fold };
+})(typeof window !== 'undefined' ? window : globalThis);
+// @@CORE-END
+
+(function () {
+  'use strict';
+  var C = window.SubCalc, KEY = 'dlh-subscription-tracker-v1', LKEY = 'dlh-subscription-tracker-lang';
+  var T = {
+    zh: { title: '订阅清单', subtitle: '一年在会员和订阅上花了多少钱？记下来，快扣费时提醒你',
+      privacy: '数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。',
+      summary: '合计', sumHint: '按周期折算：季付 ÷ 3 = 每月，年付 ÷ 12 = 每月。不同币种分开合计，不做汇率换算。',
+      add: '添加订阅', edit: '编辑订阅', name: '名称', namePh: '例如：视频会员、网盘、AI 助手', amount: '金额', currency: '币种',
+      cycle: '扣费周期', month: '每月', quarter: '每季度', year: '每年', next: '下次扣费日', note: '备注（可选）',
+      notePh: '例如：用哪个手机号开的、怎么取消', save: '添加', update: '保存修改', cancel: '取消编辑',
+      list: '我的订阅（按每月金额从高到低）', data: '提醒与备份', ics: '导出日历提醒 (.ics)', exportJson: '导出备份 (JSON)',
+      importJson: '导入备份', clear: '清空全部',
+      icsHint: '.ics 文件可以用手机或电脑的日历打开导入：每个订阅按周期重复，扣费日前 3 天上午 9 点提醒。是否弹出提醒取决于你的日历 App。',
+      privacy2: '隐私：本页面没有服务器、不联网、没有任何统计脚本。数据只在你这台设备的浏览器里，换设备或清数据前请先导出备份；Safari 长期不访问可能清掉数据。导入备份会和现有清单合并（同一条以备份为准）。',
+      footer: '一图小百科 · 数据只存在你的浏览器里，不上传 · MIT License',
+      perMonth: '每月', perYear: '每年', items: '项', count: '订阅数', empty: '还没有订阅。先在上面添加一个吧。',
+      totalM: '每月合计', totalY: '每年合计', del: '删除', editBtn: '编辑', today: '今天扣费', inDays: '{n} 天后',
+      nextOn: '下次 {d}', confirmDel: '删除“{n}”？', confirmClear: '确定清空全部订阅？建议先导出备份。',
+      e_name: '请填写名称（60 字以内）', e_amount: '请填写大于 0 的金额', e_next: '请选择下次扣费日', e_currency: '币种不正确', e_cycle: '周期不正确',
+      noData: '清单是空的，先添加订阅', icsDone: '已导出 {n} 条日历提醒', jsonDone: '已导出 {n} 条备份',
+      impDone: '已导入 {n} 条', impSkip: '，跳过 {n} 条格式不对的', impErr: '导入失败：不是本工具导出的备份文件', saveErr: '浏览器不允许保存（可能是无痕模式），刷新后数据会丢失',
+      lang: 'English' },
+    en: { title: 'Subscription Tracker', subtitle: 'How much do your subscriptions cost per year? Track them and get reminded before renewals',
+      privacy: 'Your data stays only in this browser on this device. Export a backup before switching devices or clearing data. Safari may delete data for sites you have not visited in a long time.',
+      summary: 'Totals', sumHint: 'Quarterly ÷ 3 and yearly ÷ 12 give the monthly figure. Each currency is totaled separately; no exchange rates.',
+      add: 'Add a subscription', edit: 'Edit subscription', name: 'Name', namePh: 'e.g. video streaming, cloud storage, AI chat', amount: 'Amount', currency: 'Currency',
+      cycle: 'Billing cycle', month: 'Monthly', quarter: 'Quarterly', year: 'Yearly', next: 'Next charge date', note: 'Note (optional)',
+      notePh: 'e.g. which account, how to cancel', save: 'Add', update: 'Save changes', cancel: 'Cancel',
+      list: 'My subscriptions (highest monthly cost first)', data: 'Reminders & backup', ics: 'Export calendar (.ics)', exportJson: 'Export backup (JSON)',
+      importJson: 'Import backup', clear: 'Delete all',
+      icsHint: 'Open the .ics file with your phone or computer calendar. Each subscription repeats on its cycle with an alert at 9 AM, 3 days before the charge. Whether the alert pops up depends on your calendar app.',
+      privacy2: 'Privacy: no server, no network requests, no analytics. Your data stays only in this browser on this device. Export a backup before switching devices or clearing data. Safari may delete data for sites you have not visited in a long time. Importing merges with your list (the backup wins for the same entry).',
+      footer: 'daily-life-hacks · Data stays in your browser, never uploaded · MIT License',
+      perMonth: '/mo', perYear: '/yr', items: 'items', count: 'Subscriptions', empty: 'No subscriptions yet. Add one above.',
+      totalM: 'Monthly total', totalY: 'Yearly total', del: 'Delete', editBtn: 'Edit', today: 'Charges today', inDays: 'in {n} days',
+      nextOn: 'Next {d}', confirmDel: 'Delete "{n}"?', confirmClear: 'Delete all subscriptions? Export a backup first.',
+      e_name: 'Enter a name (max 60 characters)', e_amount: 'Enter an amount greater than 0', e_next: 'Pick the next charge date', e_currency: 'Invalid currency', e_cycle: 'Invalid cycle',
+      noData: 'The list is empty. Add a subscription first.', icsDone: 'Exported {n} calendar reminders', jsonDone: 'Exported {n} entries',
+      impDone: 'Imported {n}', impSkip: ', skipped {n} invalid', impErr: 'Import failed: not a backup from this tool', saveErr: 'This browser blocks storage (private mode?); data will be lost on reload',
+      lang: '中文' }
+  };
+  var lang = 'zh';
+  try { lang = localStorage.getItem(LKEY) || (/^zh/i.test(navigator.language || 'zh') ? 'zh' : 'en'); } catch (e) {}
+  if (!T[lang]) lang = 'zh';
+  function t(k, v) { var s = T[lang][k] || k; if (v) Object.keys(v).forEach(function (x) { s = s.replace('{' + x + '}', v[x]); }); return s; }
+  var $ = function (id) { return document.getElementById(id); };
+
+  var subs = [];
+  try { var raw = localStorage.getItem(KEY); if (raw) { var p = C.parseBackup(raw); if (p.ok) subs = p.items; } } catch (e) {}
+
+  function persist() {
+    try { localStorage.setItem(KEY, C.makeBackup(subs, new Date().toISOString())); return true; }
+    catch (e) { $('dataMsg').textContent = t('saveErr'); return false; }
+  }
+  function todayStr() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function fmtMoney(n, cur) {
+    try { return new Intl.NumberFormat(lang === 'zh' ? 'zh-CN' : 'en-US', { style: 'currency', currency: cur, maximumFractionDigits: 2 }).format(n); }
+    catch (e) { return n.toFixed(2) + ' ' + cur; }
+  }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  function applyLang() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.querySelectorAll('[data-i18n]').forEach(function (n) { n.textContent = t(n.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function (n) { n.placeholder = t(n.getAttribute('data-i18n-ph')); });
+    $('langBtn').textContent = t('lang');
+    $('formTitle').textContent = $('fId').value ? t('edit') : t('add');
+    $('saveBtn').textContent = $('fId').value ? t('update') : t('save');
+    render();
+  }
+
+  function render() {
+    var today = todayStr();
+    var sum = $('summary'); sum.textContent = '';
+    var tots = C.totals(subs);
+    var cnt = el('div', 'stat'); cnt.appendChild(el('div', 'lbl', t('count'))); cnt.appendChild(el('div', 'val', String(subs.length)));
+    sum.appendChild(cnt);
+    if (!tots.length) {
+      ['totalM', 'totalY'].forEach(function (k) { var s = el('div', 'stat'); s.appendChild(el('div', 'lbl', t(k))); s.appendChild(el('div', 'val', '0')); sum.appendChild(s); });
+    }
+    tots.forEach(function (o) {
+      var a = el('div', 'stat'); a.appendChild(el('div', 'lbl', t('totalM') + ' · ' + o.currency));
+      var v = el('div', 'val', fmtMoney(o.monthly, o.currency)); v.setAttribute('data-total-m', o.currency); a.appendChild(v); sum.appendChild(a);
+      var b = el('div', 'stat'); b.appendChild(el('div', 'lbl', t('totalY') + ' · ' + o.currency));
+      var w = el('div', 'val', fmtMoney(o.yearly, o.currency)); w.setAttribute('data-total-y', o.currency); b.appendChild(w); sum.appendChild(b);
+    });
+
+    var list = $('list'); list.textContent = '';
+    if (!subs.length) { list.appendChild(el('li', 'empty', t('empty'))); return; }
+    C.sortByMonthly(subs).forEach(function (s) {
+      var nx = C.nextCharge(s.next, s.cycle, today), dd = C.daysUntil(nx, today);
+      var li = el('li', 'item' + (dd >= 0 && dd <= 7 ? ' soon' : '')); li.setAttribute('data-id', s.id);
+      var main = el('div', 'main');
+      var nm = el('div', 'name', s.name);
+      if (dd >= 0 && dd <= 7) nm.appendChild(el('span', 'badge', dd === 0 ? t('today') : t('inDays', { n: dd })));
+      main.appendChild(nm);
+      main.appendChild(el('div', 'meta', t(s.cycle) + ' ' + fmtMoney(s.amount, s.currency) + ' · ' + t('nextOn', { d: nx })));
+      if (s.note) main.appendChild(el('div', 'note', s.note));
+      var amt = el('div', 'amt');
+      amt.appendChild(el('b', null, fmtMoney(C.monthly(s.amount, s.cycle), s.currency) + (lang === 'zh' ? ' / 月' : ' /mo')));
+      amt.appendChild(el('div', null, fmtMoney(C.yearly(s.amount, s.cycle), s.currency) + (lang === 'zh' ? ' / 年' : ' /yr')));
+      var ops = el('div', 'ops');
+      var e = el('button', 'btn ghost small', t('editBtn')); e.type = 'button'; e.onclick = function () { startEdit(s.id); };
+      var d = el('button', 'btn danger small', t('del')); d.type = 'button'; d.className += ' del';
+      d.onclick = function () { if (confirm(t('confirmDel', { n: s.name }))) { subs = subs.filter(function (x) { return x.id !== s.id; }); persist(); render(); } };
+      ops.appendChild(e); ops.appendChild(d);
+      li.appendChild(main); li.appendChild(amt); li.appendChild(ops);
+      list.appendChild(li);
+    });
+  }
+
+  function resetForm() {
+    $('form').reset(); $('fId').value = ''; $('cancelEdit').hidden = true; $('formErr').textContent = '';
+    $('fCurrency').value = lang === 'zh' ? 'CNY' : 'USD';
+    $('formTitle').textContent = t('add'); $('saveBtn').textContent = t('save');
+  }
+  function startEdit(id) {
+    var s = subs.filter(function (x) { return x.id === id; })[0]; if (!s) return;
+    $('fId').value = s.id; $('fName').value = s.name; $('fAmount').value = s.amount; $('fCurrency').value = s.currency;
+    $('fCycle').value = s.cycle; $('fNext').value = s.next; $('fNote').value = s.note || '';
+    $('cancelEdit').hidden = false; $('formTitle').textContent = t('edit'); $('saveBtn').textContent = t('update');
+    $('fName').focus(); $('form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  $('cancelEdit').onclick = resetForm;
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var s = { id: $('fId').value || ('s' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+      name: $('fName').value, amount: $('fAmount').value, currency: $('fCurrency').value, cycle: $('fCycle').value,
+      next: $('fNext').value, note: $('fNote').value };
+    var err = C.validate(s);
+    if (err) { $('formErr').textContent = t('e_' + err) || err; return; }
+    s = C.clean(s);
+    var i = subs.findIndex(function (x) { return x.id === s.id; });
+    if (i >= 0) subs[i] = s; else subs.push(s);
+    persist(); resetForm(); render();
+  });
+
+  function download(name, text, type) {
+    var blob = new Blob([text], { type: type });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
+  function stamp() { return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z'); }
+  $('icsBtn').onclick = function () {
+    if (!subs.length) { $('dataMsg').textContent = t('noData'); return; }
+    download('subscriptions.ics', C.buildICS(C.sortByMonthly(subs), { today: todayStr(), stamp: stamp(), lang: lang }), 'text/calendar;charset=utf-8');
+    $('dataMsg').textContent = t('icsDone', { n: subs.length });
+  };
+  $('jsonBtn').onclick = function () {
+    if (!subs.length) { $('dataMsg').textContent = t('noData'); return; }
+    download('subscriptions-backup-' + todayStr() + '.json', C.makeBackup(subs, new Date().toISOString()), 'application/json');
+    $('dataMsg').textContent = t('jsonDone', { n: subs.length });
+  };
+  $('importBtn').onclick = function () { $('importFile').click(); };
+  $('importFile').onchange = function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var p = C.parseBackup(String(r.result));
+      if (!p.ok) { $('dataMsg').textContent = t('impErr'); return; }
+      subs = C.merge(subs, p.items); persist(); render();
+      $('dataMsg').textContent = t('impDone', { n: p.items.length }) + (p.skipped ? t('impSkip', { n: p.skipped }) : '');
+    };
+    r.readAsText(f); this.value = '';
+  };
+  $('clearBtn').onclick = function () { if (subs.length && confirm(t('confirmClear'))) { subs = []; persist(); render(); } };
+  $('langBtn').onclick = function () { lang = lang === 'zh' ? 'en' : 'zh'; try { localStorage.setItem(LKEY, lang); } catch (e) {} applyLang(); if (!$('fId').value) $('fCurrency').value = lang === 'zh' ? 'CNY' : 'USD'; };
+
+  resetForm(); applyLang();
+})();
+</script>
+</body>
+</html>
