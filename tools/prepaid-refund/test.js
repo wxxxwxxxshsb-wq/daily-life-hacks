@@ -1,12 +1,12 @@
 // 运行：node --test test.js
-// 直接从 index.html 中提取计算核心（@@CORE-START ~ @@CORE-END），保证测的就是页面里的代码。
+// 直接从 full.html 中提取计算核心（@@CORE-START ~ @@CORE-END），保证测的就是页面里的代码。
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, 'full.html'), 'utf8');
 const core = html.split('// @@CORE-START')[1].split('// @@CORE-END')[0];
 const sandbox = {};
 sandbox.globalThis = sandbox;

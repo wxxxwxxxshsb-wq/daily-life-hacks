@@ -3,509 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>预付卡退款计算器｜商家跑路、退卡该退多少</title>
-<meta name="description" content="充值赠送卡、打折卡、次卡、年卡退款金额计算，按最高人民法院预付式消费司法解释（法释〔2025〕4号）原文。仅供参考，不构成法律意见。">
-<style>
-  :root{
-    --bg:#f6f5fb; --card:#ffffff; --ink:#1f2537; --muted:#64748b; --line:#e5e3f0;
-    --brand:#6d5bd0; --brand-d:#4f3fb0; --brand-l:#efecfc; --warn:#b45309; --warn-l:#fff7e6;
-    --accent:#2563eb; --bad:#b91c1c; --radius:16px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
-    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%}
-  .wrap{max-width:720px;margin:0 auto;padding:16px 14px 40px}
-  header{text-align:center;padding:18px 4px 6px}
-  header h1{font-size:24px;margin:0 0 4px;letter-spacing:1px}
-  header p{margin:0;color:var(--muted);font-size:14px}
-  .notice{background:var(--warn-l);border:1px solid #fde3b0;color:var(--warn);border-radius:12px;
-    padding:10px 14px;font-size:14px;margin:14px 0;text-align:center}
-  .notice b{white-space:nowrap}
-  .tabs{display:flex;gap:6px;background:#e9e6f6;padding:5px;border-radius:14px;position:sticky;top:6px;z-index:5}
-  .tab{flex:1;border:0;background:transparent;padding:10px 2px;border-radius:10px;font-size:15px;color:var(--muted);
-    cursor:pointer;font-weight:600;font-family:inherit}
-  .tab.active{background:var(--card);color:var(--brand-d);box-shadow:0 2px 8px rgba(109,91,208,.18)}
-  .panel{display:none;background:var(--card);border-radius:var(--radius);padding:18px 16px;margin-top:14px;
-    box-shadow:0 4px 18px rgba(40,30,90,.06)}
-  .panel.active{display:block}
-  .panel h2{font-size:18px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:13px;margin:0 0 10px}
-  label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
-  label small{font-weight:400;color:var(--muted)}
-  input[type=number],input[type=date]{width:100%;padding:12px;font-size:16px;border:1px solid var(--line);border-radius:10px;
-    background:#fcfcfe;color:var(--ink);font-family:inherit;-webkit-appearance:none;appearance:none}
-  input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
-  .row{display:flex;gap:10px}.row>div{flex:1}
-  .seg{display:flex;gap:6px;flex-wrap:wrap}
-  .seg label{margin:0;flex:1;min-width:40%;font-weight:500}
-  .seg input{display:none}
-  .seg span{display:block;text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:10px;font-size:14px;cursor:pointer;background:#fcfcfe}
-  .seg input:checked+span{border-color:var(--brand);background:var(--brand-l);color:var(--brand-d);font-weight:700}
-  .btn{display:block;width:100%;margin-top:18px;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#7b68e0,#5141b8);
-    color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
-  .btn:active{transform:scale(.99)}
-  .result{margin-top:16px;border-radius:14px;background:var(--brand-l);padding:14px 16px;display:none}
-  .result.show{display:block}
-  .big{font-size:30px;font-weight:800;color:var(--brand-d);margin:2px 0 6px}
-  .big small{font-size:15px;font-weight:600;margin-left:2px}
-  .result .lbl{font-size:13px;color:var(--muted)}
-  .kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px dashed #cfc7f3;font-size:14px}
-  .kv b{white-space:nowrap}
-  .steps{font-size:13px;color:#334155;background:#fff;border-radius:10px;padding:10px 12px;margin-top:10px}
-  .steps div{margin:3px 0}
-  .tip{font-size:13px;color:#475569;background:#f6f9ff;border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px;margin-top:10px}
-  .err{color:var(--bad);font-size:14px;margin-top:10px;display:none}
-  .err.show{display:block}
-  .hide{display:none}
-  details{background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-top:16px;box-shadow:0 4px 18px rgba(40,30,90,.05)}
-  summary{font-weight:700;cursor:pointer;font-size:16px}
-  .basis{font-size:13px;color:#334155}
-  .basis h3{font-size:14px;margin:14px 0 4px;color:var(--brand-d)}
-  .basis blockquote{margin:6px 0;padding:6px 10px;background:#f8f7fd;border-left:3px solid var(--brand);border-radius:4px}
-  .basis a{color:var(--accent);word-break:break-all}
-  .basis ol,.basis ul{padding-left:20px;margin:6px 0}
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px}
-  @media (max-width:380px){.tab{font-size:13px}.big{font-size:26px}}
-</style>
+<title>店关门了，卡里的钱能退多少 · 预付卡退款计算器</title>
+<meta name="description" content="健身房、理发店、洗车店的充值卡，店关门了能退多少？填卡里余额、实际付了多少、送了多少，马上算出来。仅供参考，不构成法律意见。">
+<meta name="theme-color" content="#F2F4F5">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>预付卡退款计算器</h1>
-    <p>商家跑路、迁店、你想退卡：充值卡 / 次卡 / 年卡该退多少</p>
-  </header>
-
-  <div class="notice">仅供参考，不构成法律意见；商家拒退可拨 <b>12315</b>（市场监管投诉）或 <b>12345</b>（政务服务热线），也可找当地消费者协会调解或向法院起诉</div>
-
-  <div class="tabs" role="tablist">
-    <button class="tab active" data-t="p1">储值卡</button>
-    <button class="tab" data-t="p2">次卡</button>
-    <button class="tab" data-t="p3">年卡/月卡</button>
-    <button class="tab" data-t="p4">7天反悔</button>
+<main class="shell">
+  <div class="top"><h1 data-t="h1"></h1><button class="lang" id="lang" type="button"></button></div>
+  <p class="lead" data-t="lead"></p>
+  <div class="card">
+    <label class="fl" for="bal"><span data-t="balL"></span> <small data-t="balS"></small></label>
+    <div class="money"><span>¥</span><input id="bal" type="number" inputmode="decimal" min="0" placeholder="2566"></div>
+    <label class="fl" for="paid"><span data-t="paidL"></span> <small data-t="paidS"></small></label>
+    <div class="money"><span>¥</span><input id="paid" type="number" inputmode="decimal" min="0" placeholder="2000"></div>
+    <label class="fl" for="gift"><span data-t="giftL"></span> <small data-t="giftS"></small></label>
+    <div class="money"><span>¥</span><input id="gift" type="number" inputmode="decimal" min="0" placeholder="1000"></div>
+    <div class="err" id="err"></div>
+    <button class="ex" id="ex" type="button" data-t="ex"></button>
   </div>
-
-  <!-- 1 储值卡 -->
-  <section class="panel active" id="p1">
-    <h2>储值卡：充值送钱 / 办卡打折</h2>
-    <p class="sub">最常见的“充 2000 送 1000”“办卡 7 折”。先选优惠方式和退款原因。</p>
-
-    <label>优惠方式</label>
-    <div class="seg">
-      <label><input type="radio" name="sv-mode" value="gift" checked><span>充值送金额</span></label>
-      <label><input type="radio" name="sv-mode" value="discount"><span>办卡打折</span></label>
-    </div>
-
-    <label>为什么退款</label>
-    <div class="seg">
-      <label><input type="radio" name="sv-cause" value="merchant" checked><span>商家原因<br><small>跑路、停业、迁店、不提供服务</small></span></label>
-      <label><input type="radio" name="sv-cause" value="consumer"><span>我自己原因<br><small>不想用了、搬家等</small></span></label>
-    </div>
-
-    <label>实际付了多少钱 <small>（元，不含赠送）</small></label>
-    <input type="number" id="sv-paid" inputmode="decimal" min="0" placeholder="例如 2000">
-
-    <div id="sv-gift-box">
-      <label>商家赠送了多少 <small>（元）</small></label>
-      <input type="number" id="sv-gift" inputmode="decimal" min="0" placeholder="例如 1000">
-      <label>卡里已经扣掉多少 <small>（元，按卡面扣款合计）</small></label>
-      <input type="number" id="sv-used" inputmode="decimal" min="0" placeholder="例如 434">
-    </div>
-    <div id="sv-disc-box" class="hide">
-      <label>折扣 <small>（打 7 折填 7，打 8.5 折填 8.5）</small></label>
-      <input type="number" id="sv-rate" inputmode="decimal" min="0" max="10" placeholder="例如 7">
-      <label>已用项目按打折前原价合计 <small>（元）</small></label>
-      <input type="number" id="sv-orig" inputmode="decimal" min="0" placeholder="例如 800">
-    </div>
-
-    <button class="btn" id="sv-go">算一算</button>
-    <div class="err" id="sv-err"></div>
-    <div class="result" id="sv-res"></div>
+  <section class="hero idle" id="hero" aria-live="polite">
+    <div class="lbl" data-t="resL"></div>
+    <div class="big" id="big">—</div>
+    <div class="small" id="how"></div>
   </section>
-
-  <!-- 2 次卡 -->
-  <section class="panel" id="p2">
-    <h2>次卡：按次数消费</h2>
-    <p class="sub">健身次卡、理发次卡、课时包等。赠送次数也算进去。</p>
-
-    <label>为什么退款</label>
-    <div class="seg">
-      <label><input type="radio" name="cc-cause" value="merchant" checked><span>商家原因<br><small>跑路、停业、迁店等</small></span></label>
-      <label><input type="radio" name="cc-cause" value="consumer"><span>我自己原因</span></label>
-    </div>
-
-    <label>实际付了多少钱 <small>（元）</small></label>
-    <input type="number" id="cc-paid" inputmode="decimal" min="0" placeholder="例如 2000">
-    <div class="row">
-      <div><label>买了几次</label><input type="number" id="cc-bought" inputmode="numeric" min="0" placeholder="例如 50"></div>
-      <div><label>送了几次</label><input type="number" id="cc-gift" inputmode="numeric" min="0" placeholder="没有填 0"></div>
-    </div>
-    <label>已经用了几次</label>
-    <input type="number" id="cc-used" inputmode="numeric" min="0" placeholder="例如 12">
-    <div id="cc-unit-box" class="hide">
-      <label>单次打折前原价 <small>（元；没有打折也没有赠送时，填 实付 ÷ 购买次数）</small></label>
-      <input type="number" id="cc-unit" inputmode="decimal" min="0" placeholder="例如 60">
-    </div>
-
-    <button class="btn" id="cc-go">算一算</button>
-    <div class="err" id="cc-err"></div>
-    <div class="result" id="cc-res"></div>
-  </section>
-
-  <!-- 3 期限卡 -->
-  <section class="panel" id="p3">
-    <h2>年卡 / 月卡：期限内不限次数</h2>
-    <p class="sub">健身年卡、游乐场年卡等。按剩余天数占总天数的比例退。</p>
-
-    <label>实际付了多少钱 <small>（元）</small></label>
-    <input type="number" id="tc-paid" inputmode="decimal" min="0" placeholder="例如 800">
-    <div class="row">
-      <div><label>有效期开始</label><input type="date" id="tc-start"></div>
-      <div><label>有效期结束</label><input type="date" id="tc-end"></div>
-    </div>
-    <label>从哪天起不能用 <small>（商家停业那天；没停业则填合同解除那天）</small></label>
-    <input type="date" id="tc-stop">
-
-    <button class="btn" id="tc-go">算一算</button>
-    <div class="err" id="tc-err"></div>
-    <div class="result" id="tc-res"></div>
-  </section>
-
-  <!-- 4 七日 -->
-  <section class="panel" id="p4">
-    <h2>付款 7 天内反悔</h2>
-    <p class="sub">刚办卡就后悔了？付款之日起 7 日内，一般可以要求退回全部本金。</p>
-
-    <div class="row">
-      <div><label>付款日期</label><input type="date" id="co-pay"></div>
-      <div><label>提出退款日期</label><input type="date" id="co-ask"></div>
-    </div>
-    <label>办卡时是否已经在这家或别家体验过相同服务？</label>
-    <div class="seg">
-      <label><input type="radio" name="co-tried" value="no" checked><span>没有</span></label>
-      <label><input type="radio" name="co-tried" value="yes"><span>体验过</span></label>
-    </div>
-
-    <button class="btn" id="co-go">看看能不能退</button>
-    <div class="err" id="co-err"></div>
-    <div class="result" id="co-res"></div>
-  </section>
-
-  <!-- 利息 -->
-  <details>
-    <summary>➕ 顺便估算利息（可选）</summary>
-    <div class="basis">
-      <p>合同解除后，消费者可以要求商家返还剩余预付款<b>并支付利息</b>（解释第十五条）。没有约定时（第十六条）：</p>
-      <ul>
-        <li>商家原因：按<b>合同成立时</b>的一年期贷款市场报价利率（LPR）。2026-10-20 公布的一年期 LPR 为 3.0%，办卡那个月的数值请到中国人民银行网站查询。</li>
-        <li>自己原因：按合同成立时人民银行公布的一年定期存款基准利率。2015-10-24 起为 1.50%（核对至 2026-10-29 未见调整）。</li>
-      </ul>
-      <p>利息自合同解除时起算（第十七条）。下面按“本金 × 年利率 × 天数 ÷ 365”估算，法院实际计算口径以判决为准。</p>
-    </div>
-    <label>应退本金 <small>（元，可填上面算出的数）</small></label>
-    <input type="number" id="in-p" inputmode="decimal" min="0">
-    <label>年利率 <small>（%）</small></label>
-    <input type="number" id="in-r" inputmode="decimal" min="0" placeholder="例如 3.0">
-    <div class="row">
-      <div><label>合同解除日</label><input type="date" id="in-from"></div>
-      <div><label>算到哪天</label><input type="date" id="in-to"></div>
-    </div>
-    <button class="btn" id="in-go">估算利息</button>
-    <div class="err" id="in-err"></div>
-    <div class="result" id="in-res"></div>
-  </details>
-
-  <details>
-    <summary>📋 维权怎么走、要留哪些证据</summary>
-    <div class="basis">
-      <h3>先留证据</h3>
-      <ul>
-        <li>付款记录（微信 / 支付宝 / 银行流水）、收据或发票、合同或办卡单</li>
-        <li>卡面、小程序或 App 里的余额、消费记录截图</li>
-        <li>和店员、老板的聊天记录，宣传页面、活动海报截图</li>
-        <li>门店关门、贴停业告示、迁址通知的照片或视频（拍上日期）</li>
-        <li>记下营业执照上的名称和统一社会信用代码，可在国家企业信用信息公示系统查询</li>
-      </ul>
-      <p>消费记录、余额等资料在商家手里，商家无正当理由拒不提交的，法院可以根据你的主张认定（解释第二十五条）。</p>
-      <h3>再按顺序找人</h3>
-      <ol>
-        <li>书面（微信、短信也行）向商家要求退款，写清金额和依据，保留记录</li>
-        <li>拨打 <b>12315</b> 或登录全国 12315 平台投诉；也可拨 <b>12345</b></li>
-        <li>找当地消费者协会调解</li>
-        <li>向法院起诉。店开在商场里、用的是别人执照、加盟店等情况，商场、执照持有人、品牌方也可能要担责（解释第四条至第六条）</li>
-        <li>商家收钱后终止营业又恶意躲着不退的，可以请求惩罚性赔偿（解释第二十三条）；涉嫌诈骗的可向公安机关报案</li>
-      </ol>
-      <h3>这些“店规”通常无效</h3>
-      <p>“一经售出概不退款”“丢卡不补”“不得转让”“本店有权单方调整价格和项目”“最终解释权归本店”等排除消费者权利的格式条款，消费者可以主张无效（解释第九条）。</p>
-    </div>
-  </details>
-
-  <details>
-    <summary>📖 计算依据（官方原文）</summary>
-    <div class="basis">
-      <p>以下条文于 <b>2026-10-29</b> 对照官方原文核对。</p>
-      <h3>《最高人民法院关于审理预付式消费民事纠纷案件适用法律若干问题的解释》（法释〔2025〕4号，2025-05-01 起施行）</h3>
-      <p>原文：<a href="https://www.gov.cn/yaowen/liebiao/202503/content_7020334.htm" target="_blank" rel="noopener">中国政府网</a> ／ <a href="http://gongbao.court.gov.cn/Details/415add6e9c15736f2fbd871bdb1538.html" target="_blank" rel="noopener">最高人民法院公报</a></p>
-      <blockquote>第十四条　消费者自付款之日起七日内请求经营者返还预付款本金的，人民法院应予支持，但……已经从经营者处获得过相同商品或者服务；……已经从其他经营者处获得过相同商品或者服务。</blockquote>
-      <blockquote>第十五条　……返还预付款本金应为预付款扣减已兑付商品或者提供服务的价款后的余额。</blockquote>
-      <blockquote>第十八条　非因消费者原因返还预付款的……（一）经营者向消费者提供折扣商品或者服务的，按折扣价计算……（二）经营者向消费者赠送消费金额的，根据消费者实付金额与实付金额加赠送金额之比计算优惠比例，按优惠比例计算已兑付商品或者提供服务的价款。</blockquote>
-      <blockquote>第十九条　因消费者原因返还预付款，经营者向消费者提供折扣商品、服务或者向消费者赠送消费金额的，人民法院应当按商品或者服务打折前的价格计算……消费者主张打折前的价格明显不合理，经营者不能提供打折前价格交易记录的，人民法院可以按照……同类商品或者服务的市场价格计算……</blockquote>
-      <blockquote>第二十条　……按打折前的价格计算已兑付商品或者提供服务的价款超出消费者预付款，经营者请求消费者支付……超出预付款部分价款的，人民法院不予支持。</blockquote>
-      <blockquote>第二十二条　……不限次数服务，消费者请求按合同解除后的剩余履行期限与全部履行期限的比例计算应予返还的预付款的，人民法院应予支持。经营者在预付式消费合同解除前已经停止提供……按经营者停止提供商品或者服务后的剩余履行期限与全部履行期限的比例计算……消费者因自身原因未在合同约定履行期限内要求经营者提供服务，请求返还预付款的，人民法院不予支持。</blockquote>
-      <h3>次卡含赠送次数的算法</h3>
-      <p>最高人民法院典型案例三（2025-03-14 发布）：50 次另送 10 次、付 2000 元、用了 12 次，判退 2000 × 48 ÷ 60 = 1600 元。<a href="https://www.court.gov.cn/zixun/xiangqing/459331.html" target="_blank" rel="noopener">最高人民法院网</a></p>
-      <h3>其他</h3>
-      <ul>
-        <li>《消费者权益保护法》第五十三条（预收款未按约定提供，应退回预付款并承担利息、合理费用）、第二十六条（格式条款）：<a href="https://www.samr.gov.cn/zw/zfxxgk/fdzdgknr/fgs/art/2023/art_0a323e046fba43f0b6e9e977f1e8d5fc.html" target="_blank" rel="noopener">市场监管总局网站</a></li>
-        <li>《消费者权益保护法实施条例》第二十二条（预付款应订书面合同；停业或迁址应提前告知，消费者可要求退还未消费余额）：<a href="https://www.gov.cn/zhengce/content/202403/content_6940158.htm" target="_blank" rel="noopener">中国政府网</a></li>
-        <li>一年定期存款基准利率 1.50%（2015-10-24）：<a href="https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125440/125838/125888/2968982/index.html" target="_blank" rel="noopener">中国人民银行</a></li>
-        <li>期间计算（开始的当日不计入）：《民法典》第二百零一条</li>
-      </ul>
-      <h3>本工具不判断的事项</h3>
-      <ul>
-        <li>到底算“商家原因”还是“自己原因”、合同能不能解除（见解释第十三条）</li>
-        <li>赠送的实物或服务要不要折价（解释第二十一条，由法院综合认定）</li>
-        <li>多用途预付卡（能在多家不同商户用的卡）、一次性买断的商品服务，不适用这部解释</li>
-        <li>合同里有对消费者更有利的约定的，按约定处理</li>
-        <li>各地关于预付卡的地方规定</li>
-      </ul>
-      <p>以上请以当地主管部门、法院认定为准。</p>
-    </div>
-  </details>
-
-  <footer>一图小百科 · 数据只在你的手机里计算，不上传 · 依据核对日期 2026-10-29 · MIT License</footer>
-</div>
-
+  <div class="note" data-t="note"></div>
+  <p class="foot"><span data-t="foot"></span> <a href="full.html" data-t="more"></a></p>
+</main>
+<script src="core.js"></script>
 <script>
-// @@CORE-START
-(function (root) {
-  'use strict';
-  function round2(x) { return Math.round((x + Number.EPSILON) * 100) / 100; }
-  function num(x) { return typeof x === 'number' && isFinite(x); }
-
-  // 解释第十八条（二）/ 第十九条 / 第二十条：充值送金额
-  // used = 卡面已扣金额（含赠送部分），默认卡面按打折前价格扣款
-  function giftCard(paid, gift, used, cause) {
-    if (!num(paid) || paid <= 0) throw new Error('请填写实际付款金额');
-    if (!num(gift) || gift < 0) throw new Error('赠送金额不能为负');
-    if (!num(used) || used < 0) throw new Error('已扣金额不能为负');
-    if (used > paid + gift + 1e-9) throw new Error('已扣金额不能超过 实付 + 赠送');
-    var ratio = paid / (paid + gift);
-    var consumed = cause === 'merchant' ? used * ratio : used;
-    var refund = Math.max(0, paid - consumed);
-    return {
-      ratio: ratio,
-      consumed: round2(consumed),
-      refund: round2(refund),
-      cardBalance: round2(paid + gift - used),
-      capped: cause !== 'merchant' && used > paid
-    };
-  }
-
-  // 解释第十八条（一）/ 第十九条 / 第二十条：办卡打折
-  // rate10 = 折扣（7 折填 7），orig = 已用项目打折前原价合计
-  function discountCard(paid, rate10, orig, cause) {
-    if (!num(paid) || paid <= 0) throw new Error('请填写实际付款金额');
-    if (!num(rate10) || rate10 <= 0 || rate10 > 10) throw new Error('折扣请填 0～10 之间，例如 7');
-    if (!num(orig) || orig < 0) throw new Error('原价合计不能为负');
-    var rate = rate10 / 10;
-    if (orig * rate > paid + 1e-9) throw new Error('按折扣价已用金额超过了实付金额，请检查');
-    var consumed = cause === 'merchant' ? orig * rate : orig;
-    return {
-      rate: rate,
-      consumed: round2(consumed),
-      refund: round2(Math.max(0, paid - consumed)),
-      capped: cause !== 'merchant' && orig > paid
-    };
-  }
-
-  // 次卡：商家原因按 实付 × 剩余次数 ÷ (购买 + 赠送)（最高法典型案例三，解释第十八条）
-  // 自己原因按 实付 − 已用次数 × 打折前单价，最低为 0（解释第十九条、第二十条）
-  function countCard(paid, bought, gift, used, cause, unitOrig) {
-    if (!num(paid) || paid <= 0) throw new Error('请填写实际付款金额');
-    if (!num(bought) || bought <= 0 || Math.floor(bought) !== bought) throw new Error('购买次数请填正整数');
-    if (!num(gift) || gift < 0 || Math.floor(gift) !== gift) throw new Error('赠送次数请填 0 或正整数');
-    if (!num(used) || used < 0 || Math.floor(used) !== used) throw new Error('已用次数请填 0 或正整数');
-    var total = bought + gift;
-    if (used > total) throw new Error('已用次数不能超过 购买 + 赠送 次数');
-    if (cause === 'merchant') {
-      var consumed = paid * used / total;
-      return { total: total, left: total - used, consumed: round2(consumed), refund: round2(paid - consumed), capped: false };
-    }
-    if (!num(unitOrig) || unitOrig < 0) throw new Error('自己原因退卡，请填写单次打折前原价');
-    var c2 = used * unitOrig;
-    return { total: total, left: total - used, consumed: round2(c2), refund: round2(Math.max(0, paid - c2)), capped: c2 > paid };
-  }
-
-  // 日期：'YYYY-MM-DD' -> 天序号（UTC）
-  function dayNo(s) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
-    if (!m) return null;
-    var t = Date.UTC(+m[1], +m[2] - 1, +m[3]);
-    var d = new Date(t);
-    if (d.getUTCFullYear() !== +m[1] || d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) return null;
-    return Math.round(t / 86400000);
-  }
-  function daysBetween(a, b) { return dayNo(b) - dayNo(a); }
-
-  // 解释第二十二条：期限卡按 剩余期限 ÷ 全部期限
-  function timeCard(paid, start, end, stop) {
-    if (!num(paid) || paid <= 0) throw new Error('请填写实际付款金额');
-    var s = dayNo(start), e = dayNo(end), p = dayNo(stop);
-    if (s === null || e === null || p === null) throw new Error('请把三个日期都填上');
-    if (e <= s) throw new Error('结束日期要晚于开始日期');
-    var total = e - s;
-    var left = Math.min(total, Math.max(0, e - p));
-    return {
-      total: total, left: left,
-      refund: round2(paid * left / total),
-      expired: p >= e,
-      beforeStart: p < s
-    };
-  }
-
-  // 解释第十四条：付款之日起七日内；开始的当日不计入（民法典第二百零一条）
-  function coolingOff(payDate, askDate, tried) {
-    var a = dayNo(payDate), b = dayNo(askDate);
-    if (a === null || b === null) throw new Error('请填写两个日期');
-    if (b < a) throw new Error('提出退款日期不能早于付款日期');
-    var d = b - a;
-    var lastDay = new Date((a + 7) * 86400000).toISOString().slice(0, 10);
-    return { days: d, lastDay: lastDay, inTime: d <= 7, ok: d <= 7 && !tried };
-  }
-
-  // 利息估算：本金 × 年利率 × 天数 ÷ 365
-  function interest(principal, ratePct, from, to) {
-    if (!num(principal) || principal < 0) throw new Error('请填写本金');
-    if (!num(ratePct) || ratePct < 0 || ratePct > 100) throw new Error('请填写年利率（%）');
-    var a = dayNo(from), b = dayNo(to);
-    if (a === null || b === null) throw new Error('请填写两个日期');
-    if (b < a) throw new Error('结束日期不能早于解除日');
-    var days = b - a;
-    return { days: days, interest: round2(principal * ratePct / 100 * days / 365) };
-  }
-
-  root.PrepaidCalc = { round2: round2, giftCard: giftCard, discountCard: discountCard, countCard: countCard,
-    timeCard: timeCard, coolingOff: coolingOff, interest: interest, daysBetween: daysBetween, dayNo: dayNo };
-})(typeof globalThis !== 'undefined' ? globalThis : this);
-// @@CORE-END
-
-(function () {
-  'use strict';
-  var C = window.PrepaidCalc;
-  function $(id) { return document.getElementById(id); }
-  function v(id) { var x = $(id).value; return x === '' ? NaN : Number(x); }
-  function radio(name) { var r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : ''; }
-  function yuan(x) { return x.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-  function show(prefix, html) { $(prefix + '-err').classList.remove('show'); var r = $(prefix + '-res'); r.innerHTML = html; r.classList.add('show'); }
-  function fail(prefix, msg) { $(prefix + '-res').classList.remove('show'); var e = $(prefix + '-err'); e.textContent = msg; e.classList.add('show'); }
-  function run(prefix, fn) { try { fn(); } catch (e) { fail(prefix, e.message); } }
-  function remember(x) { $('in-p').value = x; }
-
-  document.querySelectorAll('.tab').forEach(function (b) {
-    b.addEventListener('click', function () {
-      document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('active', x === b); });
-      document.querySelectorAll('.panel').forEach(function (p) { p.classList.toggle('active', p.id === b.dataset.t); });
-    });
-  });
-  document.querySelectorAll('input[name="sv-mode"]').forEach(function (r) {
-    r.addEventListener('change', function () {
-      var g = radio('sv-mode') === 'gift';
-      $('sv-gift-box').classList.toggle('hide', !g);
-      $('sv-disc-box').classList.toggle('hide', g);
-    });
-  });
-  document.querySelectorAll('input[name="cc-cause"]').forEach(function (r) {
-    r.addEventListener('change', function () { $('cc-unit-box').classList.toggle('hide', radio('cc-cause') !== 'consumer'); });
-  });
-
-  var CAUSE_M = '<div class="tip">商家原因：已消费部分按<b>优惠后的价格</b>算（解释第十八条），你能多拿回一些。</div>';
-  var CAUSE_C = '<div class="tip">自己原因：已消费部分按<b>打折前原价</b>算（解释第十九条）；但就算原价算下来超过了你付的钱，商家也不能让你倒补（第二十条）。商家标的“原价”明显虚高又拿不出原价成交记录的，可以主张按当地同类服务市场价算。</div>';
-
-  $('sv-go').addEventListener('click', function () {
-    run('sv', function () {
-      var cause = radio('sv-cause'), paid = v('sv-paid'), r, html;
-      if (radio('sv-mode') === 'gift') {
-        var gift = isNaN(v('sv-gift')) ? 0 : v('sv-gift');
-        r = C.giftCard(paid, gift, v('sv-used'), cause);
-        html = '<div class="lbl">参考应退金额</div><div class="big">' + yuan(r.refund) + '<small>元</small></div>' +
-          '<div class="kv"><span>卡里显示余额</span><b>' + yuan(r.cardBalance) + ' 元</b></div>' +
-          '<div class="kv"><span>已消费按多少算</span><b>' + yuan(r.consumed) + ' 元</b></div>' +
-          '<div class="steps">' + (cause === 'merchant'
-            ? '<div>优惠比例 = 实付 ÷ (实付 + 赠送) = ' + paid + ' ÷ ' + (paid + gift) + ' = ' + (r.ratio * 100).toFixed(2) + '%</div><div>已消费价款 = ' + v('sv-used') + ' × 优惠比例 = ' + yuan(r.consumed) + '</div>'
-            : '<div>已消费价款 = 卡面已扣 ' + v('sv-used') + '（按原价）</div>') +
-          '<div>应退 = 实付 ' + paid + ' − 已消费价款' + (r.capped ? '，不足 0 按 0' : '') + ' = ' + yuan(r.refund) + '</div></div>' +
-          (cause === 'merchant' ? CAUSE_M : CAUSE_C) +
-          '<div class="tip">卡面余额 ≠ 能退的钱：赠送的部分不退现金，按比例分摊。前提是卡面按打折前价格扣款；如果卡面本来就按优惠价扣，请向主管部门核实。</div>';
-      } else {
-        var rate10 = v('sv-rate'), orig = v('sv-orig');
-        r = C.discountCard(paid, rate10, orig, cause);
-        html = '<div class="lbl">参考应退金额</div><div class="big">' + yuan(r.refund) + '<small>元</small></div>' +
-          '<div class="kv"><span>已消费按多少算</span><b>' + yuan(r.consumed) + ' 元</b></div>' +
-          '<div class="steps">' + (cause === 'merchant'
-            ? '<div>已消费价款 = 原价 ' + orig + ' × ' + rate10 + ' 折 = ' + yuan(r.consumed) + '</div>'
-            : '<div>已消费价款 = 打折前原价 ' + orig + '</div>') +
-          '<div>应退 = 实付 ' + paid + ' − 已消费价款' + (r.capped ? '，不足 0 按 0' : '') + ' = ' + yuan(r.refund) + '</div></div>' +
-          (cause === 'merchant' ? CAUSE_M : CAUSE_C);
-      }
-      remember(r.refund);
-      show('sv', html + '<div class="tip">另外可以要求利息（第十五条），见下方“估算利息”。</div>');
-    });
-  });
-
-  $('cc-go').addEventListener('click', function () {
-    run('cc', function () {
-      var cause = radio('cc-cause'), paid = v('cc-paid'), gift = isNaN(v('cc-gift')) ? 0 : v('cc-gift');
-      var r = C.countCard(paid, v('cc-bought'), gift, v('cc-used'), cause, v('cc-unit'));
-      var html = '<div class="lbl">参考应退金额</div><div class="big">' + yuan(r.refund) + '<small>元</small></div>' +
-        '<div class="kv"><span>总次数（含赠送）</span><b>' + r.total + ' 次</b></div>' +
-        '<div class="kv"><span>剩余次数</span><b>' + r.left + ' 次</b></div>' +
-        '<div class="steps">' + (cause === 'merchant'
-          ? '<div>应退 = 实付 ' + paid + ' × 剩余 ' + r.left + ' ÷ 总 ' + r.total + ' = ' + yuan(r.refund) + '</div>'
-          : '<div>已消费 = ' + v('cc-used') + ' 次 × 原价 ' + v('cc-unit') + ' = ' + yuan(r.consumed) + '</div><div>应退 = 实付 − 已消费' + (r.capped ? '，不足 0 按 0' : '') + ' = ' + yuan(r.refund) + '</div>') +
-        '</div>' + (cause === 'merchant'
-          ? '<div class="tip">赠送次数要算进总次数：最高法典型案例中，50 次送 10 次、付 2000 元、用了 12 次，判退 2000 × 48 ÷ 60 = 1600 元。</div>'
-          : CAUSE_C);
-      remember(r.refund);
-      show('cc', html);
-    });
-  });
-
-  $('tc-go').addEventListener('click', function () {
-    run('tc', function () {
-      var paid = v('tc-paid');
-      var r = C.timeCard(paid, $('tc-start').value, $('tc-end').value, $('tc-stop').value);
-      var html = '<div class="lbl">参考应退金额</div><div class="big">' + yuan(r.refund) + '<small>元</small></div>' +
-        '<div class="kv"><span>全部期限</span><b>' + r.total + ' 天</b></div>' +
-        '<div class="kv"><span>剩余期限</span><b>' + r.left + ' 天</b></div>' +
-        '<div class="steps"><div>应退 = 实付 ' + paid + ' × ' + r.left + ' ÷ ' + r.total + ' = ' + yuan(r.refund) + '</div></div>' +
-        '<div class="tip">商家先停业、后来才解除合同的，从<b>停业那天</b>起算剩余期限（解释第二十二条第二款）。按天还是按月折算，法院口径可能略有不同，结果以法院认定为准。</div>';
-      if (r.expired) html += '<div class="tip">有效期已经结束。如果是自己没去用，一般不能再要求退款（第二十二条第三款）；如果是商家在有效期内就停止服务，请把“不能用的日期”填成商家停业那天。</div>';
-      if (r.beforeStart) html += '<div class="tip">还没开始就不能用，按全额计算。</div>';
-      remember(r.refund);
-      show('tc', html);
-    });
-  });
-
-  $('co-go').addEventListener('click', function () {
-    run('co', function () {
-      var tried = radio('co-tried') === 'yes';
-      var r = C.coolingOff($('co-pay').value, $('co-ask').value, tried);
-      var html;
-      if (r.ok) html = '<div class="big" style="font-size:22px">✅ 一般可以要求退回全部本金</div><div class="steps"><div>付款后第 ' + r.days + ' 天提出；参考最后一天：' + r.lastDay + '</div></div>';
-      else if (!r.inTime) html = '<div class="big" style="font-size:22px">⏰ 已超过 7 天</div><div class="steps"><div>参考最后一天是 ' + r.lastDay + '。超过后不能无理由全额退，但可以用“储值卡 / 次卡 / 年卡”页面算退款，或看商家有没有违约。</div></div>';
-      else html = '<div class="big" style="font-size:22px">⚠️ 可能不适用 7 天无理由</div><div class="steps"><div>办卡时已在这家或别家体验过相同服务的，属于第十四条的例外。</div></div>';
-      html += '<div class="tip">依据解释第十四条。合同里有对消费者更有利的约定（比如 15 天可退）的，按约定。开始的当日不计入（民法典第二百零一条），最后一天遇法定节假日可能顺延；具体以法院认定为准。尽量用文字形式（微信、短信）提出并截图保存。</div>';
-      show('co', html);
-    });
-  });
-
-  $('in-go').addEventListener('click', function () {
-    run('in', function () {
-      var r = C.interest(v('in-p'), v('in-r'), $('in-from').value, $('in-to').value);
-      show('in', '<div class="lbl">参考利息</div><div class="big">' + yuan(r.interest) + '<small>元</small></div><div class="steps"><div>' + v('in-p') + ' × ' + v('in-r') + '% × ' + r.days + ' 天 ÷ 365</div></div>');
-    });
-  });
+(function(){
+var T={zh:{h1:'店关门了，卡里的钱能退多少？',lang:'English',lead:'预付卡就是先充钱、以后慢慢用的卡，比如健身房、理发店、洗车店的充值卡。店关门或跑路了，没用完的钱可以要回来，但店里送的钱不退。',
+ balL:'卡里还剩多少',balS:'卡上显示的余额',paidL:'当初实际付了多少',paidS:'自己掏的钱',giftL:'店里送了多少',giftS:'没送就填 0',ex:'填入示例：充 2000 送 1000，还剩 2566',
+ resL:'大约能退回',resIdle:'填好上面三项，结果显示在这里',
+ how:function(b,p,g,r){return g>0?'送的钱按比例扣掉：'+f(b)+' × '+f(p)+' ÷ '+f(p+g):'没有赠送，余额就是能退的钱'},
+ note:'只适用于店关门、跑路这类店家的原因。如果是你自己不想用了，通常退得更少。仅供参考，不构成法律意见；店家不退可以打 12315 投诉。',
+ foot:'依据最高人民法院法释〔2025〕4号第十五、十八条，核对于 2026-10-30。计算只在你手机上进行，不上传。',more:'更多：打折卡、次卡、年卡、7 天反悔 →',
+ eP:'请填实际付了多少',eO:'余额不能比“实付 + 赠送”还多'},
+ en:{h1:'Shop closed? Get your card money back',lang:'中文',lead:'A prepaid card is money you top up first, like a gym or salon card in mainland China. If the shop closes, unused money comes back; bonus credit doesn\'t.',
+ balL:'Balance left on the card',balS:'as shown',paidL:'What you actually paid',paidS:'your own money',giftL:'Bonus the shop added',giftS:'0 if none',ex:'Example: paid 2,000 + 1,000 bonus',
+ resL:'Refund, roughly',resIdle:'Fill in the three boxes to see the result',
+ how:function(b,p,g,r){return g>0?'Bonus taken out: '+f(b)+' × '+f(p)+' ÷ '+f(p+g):'No bonus, so the balance is the refund'},
+ note:'Only when the shop is at fault (closed, vanished). If you just want out, you usually get less. For reference only, not legal advice.',
+ foot:'Based on China\'s Supreme People\'s Court interpretation Fa Shi [2025] No. 4, Art. 15 and 18, checked 2026-10-30. Runs on your device.',more:'More cases (in Chinese) →',
+ eP:'Enter what you paid',eO:'The balance can\'t be more than paid + bonus'}};
+T.zh.resIdleK=T.zh.resIdle;
+var q=new URLSearchParams(location.search).get('lang'),L=q||localStorage.getItem('dlh-lang')||((navigator.language||'').toLowerCase().indexOf('zh')===0?'zh':'en');if(!T[L])L='zh';
+function f(x){return Number(x).toLocaleString(L==='zh'?'zh-CN':'en-US',{minimumFractionDigits:0,maximumFractionDigits:2})}
+var $=function(i){return document.getElementById(i)};
+function paint(){var t=T[L];document.documentElement.lang=L==='zh'?'zh-CN':'en';document.title=t.h1;
+ document.querySelectorAll('[data-t]').forEach(function(e){var k=e.getAttribute('data-t');if(typeof t[k]==='string')e.textContent=t[k]});$('lang').textContent=t.lang;calc()}
+function idle(msg){$('hero').classList.add('idle');$('big').textContent='—';$('how').textContent=T[L].resIdle;$('err').textContent=msg||''}
+function calc(){var t=T[L],bs=$('bal').value,ps=$('paid').value,b=parseFloat(bs),p=parseFloat(ps),g=parseFloat($('gift').value)||0;
+ if(bs===''||ps===''){return idle(ps!==''&&!(p>0)?t.eP:'')}
+ if(!(p>0))return idle(t.eP);if(b<0||g<0)return idle('');if(b>p+g+1e-9)return idle(t.eO);
+ var r=PrepaidCore.refund(b,p,g);$('err').textContent='';$('hero').classList.remove('idle');$('big').textContent='¥'+f(r.refund);$('how').textContent=t.how(b,p,g,r)}
+['bal','paid','gift'].forEach(function(i){$(i).addEventListener('input',calc)});
+$('ex').addEventListener('click',function(){$('bal').value=2566;$('paid').value=2000;$('gift').value=1000;calc()});
+$('lang').addEventListener('click',function(){L=L==='zh'?'en':'zh';localStorage.setItem('dlh-lang',L);paint()});
+paint();
 })();
 </script>
 </body>
