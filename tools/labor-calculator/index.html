@@ -3,409 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>劳动权益计算器｜年假工资 · 年假折算 · 离职补偿</title>
-<meta name="description" content="未休年假工资、年休假天数折算、离职经济补偿计算，附官方原文依据。仅供参考，不构成法律意见。">
-<style>
-  :root{
-    --bg:#f3f8f7; --card:#ffffff; --ink:#1f2d3a; --muted:#64748b; --line:#e2ebe9;
-    --brand:#14a38b; --brand-d:#0d7f6c; --brand-l:#e3f6f2; --warn:#b45309; --warn-l:#fff7e6;
-    --accent:#2563eb; --radius:16px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
-    background:var(--bg);color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%}
-  .wrap{max-width:720px;margin:0 auto;padding:16px 14px 40px}
-  header{text-align:center;padding:18px 4px 6px}
-  header h1{font-size:24px;margin:0 0 4px;letter-spacing:1px}
-  header p{margin:0;color:var(--muted);font-size:14px}
-  .notice{background:var(--warn-l);border:1px solid #fde3b0;color:var(--warn);border-radius:12px;
-    padding:10px 14px;font-size:14px;margin:14px 0;text-align:center}
-  .notice b{white-space:nowrap}
-  .tabs{display:flex;gap:6px;background:#e6efed;padding:5px;border-radius:14px;position:sticky;top:6px;z-index:5}
-  .tab{flex:1;border:0;background:transparent;padding:10px 4px;border-radius:10px;font-size:15px;color:var(--muted);
-    cursor:pointer;font-weight:600;font-family:inherit}
-  .tab.active{background:var(--card);color:var(--brand-d);box-shadow:0 2px 8px rgba(20,163,139,.15)}
-  .panel{display:none;background:var(--card);border-radius:var(--radius);padding:18px 16px;margin-top:14px;
-    box-shadow:0 4px 18px rgba(15,60,50,.06)}
-  .panel.active{display:block}
-  .panel h2{font-size:18px;margin:0 0 4px}
-  .sub{color:var(--muted);font-size:13px;margin:0 0 14px}
-  label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
-  label small{font-weight:400;color:var(--muted)}
-  input[type=number],input[type=date]{width:100%;padding:12px;font-size:16px;border:1px solid var(--line);border-radius:10px;
-    background:#fbfdfd;color:var(--ink);font-family:inherit;-webkit-appearance:none;appearance:none}
-  input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
-  .row{display:flex;gap:10px}.row>div{flex:1}
-  .check{display:flex;align-items:flex-start;gap:10px;font-weight:500;margin:12px 0;font-size:14px;cursor:pointer}
-  .check input{width:20px;height:20px;margin-top:1px;accent-color:var(--brand);flex:none}
-  .seg{display:flex;gap:6px;flex-wrap:wrap}
-  .seg label{margin:0;flex:1;min-width:30%;font-weight:500}
-  .seg input{display:none}
-  .seg span{display:block;text-align:center;padding:9px 6px;border:1px solid var(--line);border-radius:10px;font-size:14px;cursor:pointer;background:#fbfdfd}
-  .seg input:checked+span{border-color:var(--brand);background:var(--brand-l);color:var(--brand-d);font-weight:700}
-  .btn{display:block;width:100%;margin-top:18px;padding:13px;border:0;border-radius:12px;background:linear-gradient(135deg,#19b398,#0d8f78);
-    color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
-  .btn:active{transform:scale(.99)}
-  .result{margin-top:16px;border-radius:14px;background:var(--brand-l);padding:14px 16px;display:none}
-  .result.show{display:block}
-  .big{font-size:30px;font-weight:800;color:var(--brand-d);margin:2px 0 6px}
-  .big small{font-size:15px;font-weight:600;margin-left:2px}
-  .result .lbl{font-size:13px;color:var(--muted)}
-  .kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px dashed #bfe6dd;font-size:14px}
-  .kv b{white-space:nowrap}
-  .steps{font-size:13px;color:#334155;background:#fff;border-radius:10px;padding:10px 12px;margin-top:10px}
-  .steps div{margin:3px 0}
-  .tip{font-size:13px;color:#475569;background:#f6f9ff;border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px;margin-top:10px}
-  .err{color:#b91c1c;font-size:14px;margin-top:10px;display:none}
-  .err.show{display:block}
-  details{background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-top:16px;box-shadow:0 4px 18px rgba(15,60,50,.05)}
-  summary{font-weight:700;cursor:pointer;font-size:16px}
-  .basis{font-size:13px;color:#334155}
-  .basis h3{font-size:14px;margin:14px 0 4px;color:var(--brand-d)}
-  .basis blockquote{margin:6px 0;padding:6px 10px;background:#f7faf9;border-left:3px solid var(--brand);border-radius:4px}
-  .basis a{color:var(--accent);word-break:break-all}
-  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px}
-  @media (max-width:380px){.tab{font-size:13px}.big{font-size:26px}}
-</style>
+<title>没休的年假能补多少钱 · 年假工资计算器</title>
+<meta name="description" content="单位没安排你休年假，每没休 1 天，除了正常工资还要再多给 2 天工资。填月工资和天数，马上算出来。仅供参考，不构成法律意见。">
+<meta name="theme-color" content="#F2F4F5">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>劳动权益计算器</h1>
-    <p>未休年假工资 · 年假天数折算 · 离职经济补偿</p>
-  </header>
-
-  <div class="notice">仅供参考，不构成法律意见；拿不准可拨 <b>12333</b>（人社服务热线）咨询</div>
-
-  <nav class="tabs" role="tablist">
-    <button class="tab active" data-tab="t1" role="tab">未休年假工资</button>
-    <button class="tab" data-tab="t2" role="tab">年假天数折算</button>
-    <button class="tab" data-tab="t3" role="tab">离职经济补偿</button>
-  </nav>
-
-  <!-- ========== 1 未休年假工资 ========== -->
-  <section class="panel active" id="t1">
-    <h2>应休未休年假，单位该付多少？</h2>
-    <p class="sub">单位经你同意没安排年假（或安排少了），未休的每一天按日工资的 300% 支付。</p>
-    <label>月工资（元）<small>· 支付前12个月、剔除加班工资后的月平均工资</small></label>
-    <input type="number" id="l_wage" inputmode="decimal" min="0" placeholder="例如 6525">
-    <label>应休未休天数（天）</label>
-    <input type="number" id="l_days" inputmode="decimal" min="0" step="0.5" placeholder="例如 3">
-    <button class="btn" id="l_btn">计算</button>
-    <div class="err" id="l_err"></div>
-    <div class="result" id="l_res"></div>
-    <div class="tip">在本单位工作不满12个月的，按实际月份算月平均工资。如果是<b>你本人书面提出</b>不休年假，单位可以只付正常工资（办法第十条第二款）。合同、集体合同或公司制度规定高于法定标准的，按高的执行（办法第十三条）。</div>
+<main class="shell">
+  <div class="top"><h1 data-t="h1"></h1><button class="lang" id="lang" type="button"></button></div>
+  <p class="lead" data-t="lead"></p>
+  <div class="card">
+    <label class="fl" for="wage"><span data-t="wageL"></span> <small data-t="wageS"></small></label>
+    <div class="money"><span data-t="cur"></span><input id="wage" type="number" inputmode="decimal" min="0" placeholder="6525"></div>
+    <label class="fl" for="days" data-t="daysL"></label>
+    <div class="money"><input id="days" type="number" inputmode="decimal" min="0" step="0.5" placeholder="3" style="padding-left:0"><em data-t="dayU"></em></div>
+    <div class="err" id="err"></div>
+    <button class="ex" id="ex" type="button" data-t="ex"></button>
+  </div>
+  <section class="hero idle" id="hero" aria-live="polite">
+    <div class="lbl" data-t="resL"></div>
+    <div class="big" id="big">—</div>
+    <div class="small" id="how" data-t="resIdle"></div>
   </section>
-
-  <!-- ========== 2 年假天数折算 ========== -->
-  <section class="panel" id="t2">
-    <h2>今年我能休几天年假？</h2>
-    <p class="sub">先按累计工作年限定全年天数，新入职或离职当年再按日历天数折算，不足1整天的部分不算。</p>
-    <label>累计工作年限（年）<small>· 在不同单位的工作时间也算</small></label>
-    <input type="number" id="a_years" inputmode="decimal" min="0" step="0.1" placeholder="例如 3">
-    <label class="check"><input type="checkbox" id="a_12m" checked><span>已连续工作满 12 个月（办法第三条：满12个月以上才享受年休假）</span></label>
-    <label>折算情形</label>
-    <div class="seg">
-      <label><input type="radio" name="a_mode" value="full" checked><span>全年在职</span></label>
-      <label><input type="radio" name="a_mode" value="join"><span>今年新入职</span></label>
-      <label><input type="radio" name="a_mode" value="leave"><span>今年离职</span></label>
-    </div>
-    <div id="a_join_box" style="display:none">
-      <label>入职日期</label>
-      <input type="date" id="a_join">
-    </div>
-    <div id="a_leave_box" style="display:none">
-      <label>离职日期（劳动合同解除/终止日）</label>
-      <input type="date" id="a_leave">
-      <label>当年入职日期 <small>· 选填，只有今年才入职时填写</small></label>
-      <input type="date" id="a_leave_join">
-      <label>当年已安排休的年假天数（天）</label>
-      <input type="number" id="a_used" inputmode="decimal" min="0" step="0.5" value="0">
-    </div>
-    <button class="btn" id="a_btn">计算</button>
-    <div class="err" id="a_err"></div>
-    <div class="result" id="a_res"></div>
-    <div class="tip">原文折算公式统一除以 365 天，闰年也照此计算；全年在职的不再折算。“年度”指公历年度（办法第十八条）。请事假、病假达到条例第四条规定天数的，可能不享受当年年假，本工具不判断这些情形。</div>
-  </section>
-
-  <!-- ========== 3 离职经济补偿 ========== -->
-  <section class="panel" id="t3">
-    <h2>被辞退 / 协商离职，补偿多少？</h2>
-    <p class="sub">经济补偿 = 月工资 × 补偿月数（每满1年1个月）。是否属于应当支付补偿的情形，请对照下方依据中的劳动合同法第四十六条。</p>
-    <label>月平均工资（元）<small>· 解除前12个月的平均应得工资，含奖金、津贴、补贴</small></label>
-    <input type="number" id="s_wage" inputmode="decimal" min="0" placeholder="例如 8000">
-    <label>在本单位工作年限</label>
-    <div class="row">
-      <div><input type="number" id="s_y" inputmode="numeric" min="0" step="1" placeholder="年"></div>
-      <div><input type="number" id="s_m" inputmode="numeric" min="0" max="11" step="1" placeholder="零几个月"></div>
-    </div>
-    <label>当地上年度职工月平均工资（元）<small>· 选填，用于判断3倍封顶</small></label>
-    <input type="number" id="s_avg" inputmode="decimal" min="0" placeholder="去所在城市人社局官网查询">
-    <label>当地最低工资标准（元/月）<small>· 选填，月平均工资低于它时按它算</small></label>
-    <input type="number" id="s_min" inputmode="decimal" min="0" placeholder="可不填">
-    <label class="check"><input type="checkbox" id="s_illegal"><span>单位<b>违法</b>解除/终止，我不要求继续履行（赔偿金按 2 倍，即常说的 2N）</span></label>
-    <label class="check"><input type="checkbox" id="s_notice"><span>单位按第四十条解除，且<b>没有提前30天书面通知</b>（多付1个月工资，即常说的 N+1）</span></label>
-    <div id="s_last_box" style="display:none">
-      <label>上一个月工资（元）<small>· 代通知金按上一个月工资标准，不填则用月平均工资</small></label>
-      <input type="number" id="s_last" inputmode="decimal" min="0" placeholder="可不填">
-    </div>
-    <button class="btn" id="s_btn">计算</button>
-    <div class="err" id="s_err"></div>
-    <div class="result" id="s_res"></div>
-    <div class="tip">当地社平工资：在“XX市人力资源和社会保障局”官网搜索“上年度职工月平均工资”或“社平工资”，以设区的市级政府公布的口径为准。工资构成、工作年限（含2008年以前的年限、被安排换单位的年限合并）等细节存在争议时，<b>以当地规定 / 仲裁机构认定为准</b>。</div>
-  </section>
-
-  <details open>
-    <summary>依据（官方原文，核对日期 2026-10-29）</summary>
-    <div class="basis">
-      <h3>《企业职工带薪年休假实施办法》（人社部令第1号）</h3>
-      <blockquote>第三条 职工连续工作满12个月以上的，享受带薪年休假。</blockquote>
-      <blockquote>第五条 ……当年度年休假天数，按照在本单位剩余日历天数折算确定，折算后不足1整天的部分不享受年休假。折算方法为：（当年度在本单位剩余日历天数÷365天）×职工本人全年应当享受的年休假天数。</blockquote>
-      <blockquote>第十条 ……按照其日工资收入的300%支付未休年休假工资报酬，其中包含用人单位支付职工正常工作期间的工资收入。</blockquote>
-      <blockquote>第十一条 ……日工资收入按照职工本人的月工资除以月计薪天数（21.75天）进行折算。月工资是指……支付其未休年休假工资报酬前12个月剔除加班工资后的月平均工资。</blockquote>
-      <blockquote>第十二条 ……折算方法为：（当年度在本单位已过日历天数÷365天）×职工本人全年应当享受的年休假天数－当年度已安排年休假天数。……折算后不足1整天的部分不支付。</blockquote>
-      <a href="https://www.gov.cn/zhengce/2022-08/31/content_5711300.htm" target="_blank" rel="noopener">https://www.gov.cn/zhengce/2022-08/31/content_5711300.htm</a>
-
-      <h3>《职工带薪年休假条例》（国务院令第514号）</h3>
-      <blockquote>第三条 职工累计工作已满1年不满10年的，年休假5天；已满10年不满20年的，年休假10天；已满20年的，年休假15天。</blockquote>
-      <a href="https://www.gov.cn/zhengce/2007-12/16/content_2602498.htm" target="_blank" rel="noopener">https://www.gov.cn/zhengce/2007-12/16/content_2602498.htm</a>
-      <p>注：官方已公开表示将推动修订该条例，截至核对日尚未见修订后的正式文本，本工具按现行条例计算，修订公布后会更新。</p>
-
-      <h3>《中华人民共和国劳动合同法》</h3>
-      <blockquote>第四十条 有下列情形之一的，用人单位提前三十日以书面形式通知劳动者本人或者额外支付劳动者一个月工资后，可以解除劳动合同……</blockquote>
-      <blockquote>第四十六条 有下列情形之一的，用人单位应当向劳动者支付经济补偿……（协商一致由单位提出、第四十条、第四十一条裁员、劳动者依第三十八条解除、固定期限合同到期单位不续等）</blockquote>
-      <blockquote>第四十七条 经济补偿按劳动者在本单位工作的年限，每满一年支付一个月工资的标准向劳动者支付。六个月以上不满一年的，按一年计算；不满六个月的，向劳动者支付半个月工资的经济补偿。劳动者月工资高于……本地区上年度职工月平均工资三倍的，向其支付经济补偿的标准按职工月平均工资三倍的数额支付，向其支付经济补偿的年限最高不超过十二年。本条所称月工资是指劳动者在劳动合同解除或者终止前十二个月的平均工资。</blockquote>
-      <blockquote>第八十七条 用人单位违反本法规定解除或者终止劳动合同的，应当依照本法第四十七条规定的经济补偿标准的二倍向劳动者支付赔偿金。</blockquote>
-      <a href="http://www.npc.gov.cn/npc/c2/c183/c198/201905/t20190522_26978.html" target="_blank" rel="noopener">http://www.npc.gov.cn/npc/c2/c183/c198/201905/t20190522_26978.html</a>
-      <p>注：2012年修正只改了劳务派遣相关的第五十七、六十三、六十六、九十二条，以上条文未变。</p>
-
-      <h3>《中华人民共和国劳动合同法实施条例》（国务院令第535号）</h3>
-      <blockquote>第二十条 ……额外支付的工资应当按照该劳动者上一个月的工资标准确定。</blockquote>
-      <blockquote>第二十五条 ……依照劳动合同法第八十七条的规定支付了赔偿金的，不再支付经济补偿。赔偿金的计算年限自用工之日起计算。</blockquote>
-      <blockquote>第二十七条 ……经济补偿的月工资按照劳动者应得工资计算，包括计时工资或者计件工资以及奖金、津贴和补贴等货币性收入。……前12个月的平均工资低于当地最低工资标准的，按照当地最低工资标准计算。……工作不满12个月的，按照实际工作的月数计算平均工资。</blockquote>
-      <a href="https://www.gov.cn/zhengce/2008-09/19/content_2602519.htm" target="_blank" rel="noopener">https://www.gov.cn/zhengce/2008-09/19/content_2602519.htm</a>
-
-      <h3>以当地规定 / 仲裁机构认定为准的情形</h3>
-      <p>是否属于违法解除、是否属于应付补偿的情形、工资基数包含哪些项目、2008年以前的工作年限、各地对年假和补偿的细化规定等，本工具不做判断。遇到争议可咨询 12333 或当地劳动争议仲裁委员会。</p>
-    </div>
-  </details>
-
-  <footer>MIT License · 计算全部在你的浏览器本地完成，不上传任何数据 · 依据核对日期 2026-10-29</footer>
-</div>
-
+  <div class="note" data-t="note"></div>
+  <p class="foot"><span data-t="foot"></span> <a href="full.html" data-t="more"></a></p>
+</main>
+<script src="core.js"></script>
 <script>
-// @@CORE-START
-(function (root) {
-  'use strict';
-  var PAY_DAYS = 21.75;
-
-  function round2(x) { return Math.round((x + Number.EPSILON) * 100) / 100; }
-
-  // 条例第三条：累计工作年限 -> 全年年休假天数
-  function annualEntitlement(years) {
-    if (!(years >= 1)) return 0;
-    if (years < 10) return 5;
-    if (years < 20) return 10;
-    return 15;
-  }
-
-  // 办法第十条、第十一条
-  function unusedLeavePay(monthlyWage, days) {
-    var daily = monthlyWage / PAY_DAYS;
-    return {
-      daily: round2(daily),
-      total: round2(daily * 3 * days),   // 300%
-      normal: round2(daily * days),      // 其中正常工资部分
-      extra: round2(daily * 2 * days)    // 额外应补 200%
-    };
-  }
-
-  // 日期工具：'YYYY-MM-DD' -> UTC 毫秒
-  function parseDate(s) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
-    if (!m) return null;
-    var t = Date.UTC(+m[1], +m[2] - 1, +m[3]);
-    var d = new Date(t);
-    if (d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) return null;
-    return { t: t, y: +m[1] };
-  }
-  var DAY = 86400000;
-  function daysInclusive(a, b) { return Math.round((b - a) / DAY) + 1; }
-
-  // 办法第五条：新入职当年，剩余日历天数（含入职当天至12月31日）
-  function joinYearLeave(annual, joinDate) {
-    var d = parseDate(joinDate); if (!d) throw new Error('入职日期无效');
-    var remain = daysInclusive(d.t, Date.UTC(d.y, 11, 31));
-    var raw = remain / 365 * annual;
-    var days = Math.min(annual, Math.floor(remain * annual / 365 + 1e-9));
-    return { calendarDays: remain, raw: raw, days: days };
-  }
-
-  // 办法第十二条：离职当年，已过日历天数（含1月1日或当年入职日至离职日）
-  function leaveYearLeave(annual, leaveDate, usedDays, joinDate) {
-    var d = parseDate(leaveDate); if (!d) throw new Error('离职日期无效');
-    var start = Date.UTC(d.y, 0, 1);
-    if (joinDate) {
-      var j = parseDate(joinDate); if (!j) throw new Error('入职日期无效');
-      if (j.t > d.t) throw new Error('入职日期不能晚于离职日期');
-      if (j.y === d.y) start = j.t;
-    }
-    var passed = daysInclusive(start, d.t);
-    var used = usedDays || 0;
-    var raw = passed / 365 * annual - used;
-    var days = Math.max(0, Math.floor(passed * annual / 365 - used + 1e-9));
-    days = Math.min(days, annual);
-    return { calendarDays: passed, raw: raw, days: days, used: used };
-  }
-
-  // 劳动合同法第四十七条：工作年限 -> 补偿月数
-  function compensationMonths(years, months) {
-    var total = (years || 0) * 12 + (months || 0);
-    var full = Math.floor(total / 12), rest = total - full * 12;
-    if (rest >= 6) return full + 1;
-    if (rest > 0) return full + 0.5;
-    return full;
-  }
-
-  // 第四十六、四十七、八十七、四十条 + 实施条例第二十、二十五、二十七条
-  function severance(o) {
-    var wage = +o.wage || 0;
-    var n = compensationMonths(+o.years || 0, +o.months || 0);
-    var base = wage, usedMin = false, capped = false;
-    if (o.minWage && wage < +o.minWage) { base = +o.minWage; usedMin = true; }
-    var nUsed = n;
-    if (o.localAvg && +o.localAvg > 0 && base > 3 * +o.localAvg) {
-      base = 3 * +o.localAvg; capped = true;
-      nUsed = Math.min(n, 12);
-    }
-    var comp = base * nUsed;
-    var res = {
-      months: n, monthsUsed: nUsed, base: round2(base), capped: capped, usedMin: usedMin,
-      compensation: round2(comp), damages: 0, notice: 0, total: 0, illegal: !!o.illegal
-    };
-    if (o.illegal) {
-      // 第八十七条：2倍赔偿金；实施条例第二十五条：支付赔偿金的不再支付经济补偿
-      res.damages = round2(comp * 2);
-      res.total = res.damages;
-    } else {
-      res.total = res.compensation;
-      if (o.noNotice) {
-        // 第四十条 + 实施条例第二十条：按上一个月工资标准
-        res.notice = round2(o.lastMonth ? +o.lastMonth : wage);
-        res.total = round2(res.total + res.notice);
-      }
-    }
-    return res;
-  }
-
-  var api = { PAY_DAYS: PAY_DAYS, round2: round2, annualEntitlement: annualEntitlement,
-    unusedLeavePay: unusedLeavePay, joinYearLeave: joinYearLeave, leaveYearLeave: leaveYearLeave,
-    compensationMonths: compensationMonths, severance: severance, parseDate: parseDate };
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  root.LaborCalc = api;
-})(typeof window !== 'undefined' ? window : globalThis);
-// @@CORE-END
-
-(function () {
-  var C = window.LaborCalc;
-  var $ = function (id) { return document.getElementById(id); };
-  var fmt = function (x) { return Number(x).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
-  function num(id) { var v = $(id).value; return v === '' ? NaN : Number(v); }
-  function showErr(p, msg) { $(p + '_err').textContent = msg; $(p + '_err').classList.add('show'); $(p + '_res').classList.remove('show'); }
-  function showRes(p, html) { $(p + '_err').classList.remove('show'); $(p + '_res').innerHTML = html; $(p + '_res').classList.add('show'); }
-  function kv(k, v) { return '<div class="kv"><span>' + k + '</span><b>' + v + '</b></div>'; }
-
-  document.querySelectorAll('.tab').forEach(function (b) {
-    b.addEventListener('click', function () {
-      document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('active', x === b); });
-      document.querySelectorAll('.panel').forEach(function (x) { x.classList.toggle('active', x.id === b.dataset.tab); });
-    });
-  });
-
-  // 1
-  $('l_btn').addEventListener('click', function () {
-    var w = num('l_wage'), d = num('l_days');
-    if (!(w > 0)) return showErr('l', '请填写月工资');
-    if (!(d > 0)) return showErr('l', '请填写应休未休天数');
-    var r = C.unusedLeavePay(w, d);
-    showRes('l',
-      '<div class="lbl">未休年假工资报酬合计（300%）</div><div class="big">' + fmt(r.total) + '<small>元</small></div>' +
-      kv('日工资（月工资 ÷ 21.75）', fmt(r.daily) + ' 元') +
-      kv('其中：正常工作期间工资（100%）', fmt(r.normal) + ' 元') +
-      kv('额外应补（200%）', fmt(r.extra) + ' 元') +
-      '<div class="steps"><div>日工资 = ' + fmt(w) + ' ÷ 21.75 = ' + fmt(r.daily) + '</div>' +
-      '<div>合计 = 日工资 × 300% × ' + d + ' 天 = ' + fmt(r.total) + '</div>' +
-      '<div>原文写明 300% 中已包含正常工资，所以如果这几天的正常工资已经照发，单位还应另付 200%，即 ' + fmt(r.extra) + ' 元。</div></div>');
-  });
-
-  // 2
-  function modeVal() { return document.querySelector('input[name=a_mode]:checked').value; }
-  document.querySelectorAll('input[name=a_mode]').forEach(function (r) {
-    r.addEventListener('change', function () {
-      $('a_join_box').style.display = modeVal() === 'join' ? 'block' : 'none';
-      $('a_leave_box').style.display = modeVal() === 'leave' ? 'block' : 'none';
-    });
-  });
-  $('a_btn').addEventListener('click', function () {
-    var y = num('a_years');
-    if (!(y >= 0)) return showErr('a', '请填写累计工作年限');
-    if (!$('a_12m').checked) return showRes('a', '<div class="lbl">今年可休年假</div><div class="big">0<small>天</small></div><div class="steps">按办法第三条，连续工作满12个月以上才享受年休假（不同单位连续工作的时间如何认定，以当地规定 / 仲裁机构认定为准）。</div>');
-    var annual = C.annualEntitlement(y);
-    var head = kv('全年应享受（按累计工作年限）', annual + ' 天');
-    if (annual === 0) return showRes('a', '<div class="lbl">今年可休年假</div><div class="big">0<small>天</small></div>' + head + '<div class="steps">累计工作不满1年，按条例第三条不享受年休假。</div>');
-    var mode = modeVal(), r;
-    try {
-      if (mode === 'full') return showRes('a', '<div class="lbl">今年可休年假</div><div class="big">' + annual + '<small>天</small></div>' + head +
-        '<div class="steps">累计满1年不满10年 5天；满10年不满20年 10天；满20年 15天（条例第三条）。法定节假日、休息日不计入年假。</div>');
-      if (mode === 'join') {
-        if (!$('a_join').value) return showErr('a', '请选择入职日期');
-        r = C.joinYearLeave(annual, $('a_join').value);
-        return showRes('a', '<div class="lbl">入职当年可休年假</div><div class="big">' + r.days + '<small>天</small></div>' + head +
-          kv('当年在本单位剩余日历天数', r.calendarDays + ' 天') +
-          '<div class="steps"><div>' + r.calendarDays + ' ÷ 365 × ' + annual + ' = ' + C.round2(r.raw) + '</div><div>不足1整天的部分不享受 → ' + r.days + ' 天（办法第五条）</div></div>');
-      }
-      if (!$('a_leave').value) return showErr('a', '请选择离职日期');
-      var used = num('a_used'); if (!(used >= 0)) used = 0;
-      r = C.leaveYearLeave(annual, $('a_leave').value, used, $('a_leave_join').value || null);
-      return showRes('a', '<div class="lbl">离职时应补的未休年假</div><div class="big">' + r.days + '<small>天</small></div>' + head +
-        kv('当年在本单位已过日历天数', r.calendarDays + ' 天') + kv('当年已安排休', used + ' 天') +
-        '<div class="steps"><div>' + r.calendarDays + ' ÷ 365 × ' + annual + ' − ' + used + ' = ' + C.round2(r.raw) + '</div>' +
-        '<div>不足1整天的部分不支付 → ' + r.days + ' 天（办法第十二条）</div>' +
-        '<div>已多休的不再扣回。可把天数填到“未休年假工资”页算钱。</div></div>');
-    } catch (e) { showErr('a', e.message); }
-  });
-
-  // 3
-  function syncNotice() {
-    var ill = $('s_illegal').checked;
-    $('s_notice').disabled = ill;
-    if (ill) $('s_notice').checked = false;
-    $('s_last_box').style.display = $('s_notice').checked ? 'block' : 'none';
-  }
-  $('s_illegal').addEventListener('change', syncNotice);
-  $('s_notice').addEventListener('change', syncNotice);
-  $('s_btn').addEventListener('click', function () {
-    var w = num('s_wage'), y = num('s_y'), m = num('s_m');
-    if (!(w > 0)) return showErr('s', '请填写月平均工资');
-    if (isNaN(y)) y = 0; if (isNaN(m)) m = 0;
-    if (y < 0 || m < 0 || m > 11 || y % 1 || m % 1) return showErr('s', '工作年限请填整数年 + 0~11 个月');
-    if (y === 0 && m === 0) return showErr('s', '请填写在本单位的工作年限');
-    var r = C.severance({ wage: w, years: y, months: m, localAvg: num('s_avg') || 0, minWage: num('s_min') || 0,
-      illegal: $('s_illegal').checked, noNotice: $('s_notice').checked, lastMonth: num('s_last') || 0 });
-    var h = '<div class="lbl">' + (r.illegal ? '违法解除赔偿金（2N）' : (r.notice ? '经济补偿 + 代通知金（N+1）' : '经济补偿（N）')) + '</div>' +
-      '<div class="big">' + fmt(r.total) + '<small>元</small></div>' +
-      kv('补偿月数 N', r.months + (r.monthsUsed !== r.months ? ' → 封顶 ' + r.monthsUsed : '') + ' 个月') +
-      kv('计算基数', fmt(r.base) + ' 元/月' + (r.capped ? '（社平3倍封顶）' : r.usedMin ? '（按最低工资）' : ''));
-    if (r.illegal) h += kv('经济补偿标准 × 2', fmt(r.compensation) + ' × 2');
-    if (r.notice) h += kv('经济补偿', fmt(r.compensation) + ' 元') + kv('代通知金（1个月工资）', fmt(r.notice) + ' 元');
-    var st = '<div>N：每满1年算1个月；零头满6个月算1年，不满6个月算半个月（第四十七条）。</div>';
-    if (r.capped) st += '<div>月工资高于当地社平3倍：基数按3倍，年限最多算12年（第四十七条第二款）。</div>';
-    else if (!(num('s_avg') > 0)) st += '<div>没填当地社平工资，未做3倍封顶判断；月薪较高的请补填。</div>';
-    if (r.illegal) st += '<div>违法解除按经济补偿标准的2倍支付赔偿金，付了赔偿金就不再另付经济补偿，年限从用工之日起算（第八十七条、实施条例第二十五条）。是否构成违法解除，以仲裁机构 / 法院认定为准。</div>';
-    if (r.notice) st += '<div>代通知金只适用于第四十条的三种情形，按上一个月工资标准（实施条例第二十条）。</div>';
-    showRes('s', h + '<div class="steps">' + st + '</div>');
-  });
+(function(){
+var T={zh:{h1:'没休的年假，能补多少钱？',lang:'English',lead:'单位没安排你休年假（或安排少了），每没休 1 天，除了正常工资，还要再多给你 2 天的工资。填两个数就能算。',
+ wageL:'月工资',wageS:'过去 12 个月平均，不算加班费',cur:'¥',daysL:'没休的年假天数',dayU:'天',ex:'填入示例：月薪 6525，没休 3 天',
+ resL:'单位还应额外补你',resIdle:'填好上面两项，结果显示在这里',
+ how:function(r){return '日工资 '+f(r.daily)+'（月工资 ÷ 21.75）× 2 倍 × 天数'},unit:'元',
+ note:'你自己书面申请不休的，单位可以只付正常工资。仅供参考，不构成法律意见；拿不准可以打 12333 问。',
+ foot:'依据《企业职工带薪年休假实施办法》第十、十一条，核对于 2026-10-30。计算只在你手机上进行，不上传。',more:'更多：入职离职当年年假、离职补偿 →',
+ eW:'请填月工资',eD:'请填没休的天数'},
+ en:{h1:'Unused annual leave: what are you owed?',lang:'中文',lead:'For jobs in mainland China. If your employer didn\'t let you take your annual leave, each unused day earns 2 extra days\' pay on top of your normal wage.',
+ wageL:'Monthly pay',wageS:'12-month average, no overtime',cur:'¥',daysL:'Unused leave days',dayU:'days',ex:'Try an example: 6,525 a month, 3 days',
+ resL:'Extra pay owed to you',resIdle:'Fill in both boxes to see the result',
+ how:function(r){return 'Daily pay '+f(r.daily)+' (monthly ÷ 21.75) × 2 × days'},unit:'yuan',
+ note:'If you asked in writing not to take the leave, the employer only owes normal pay. For reference only, not legal advice.',
+ foot:'Based on China\'s Implementing Measures for Paid Annual Leave, Art. 10–11, checked 2026-10-30. Runs on your device, nothing uploaded.',more:'More calculators (in Chinese) →',
+ eW:'Enter your monthly pay',eD:'Enter the unused days'}};
+var q=new URLSearchParams(location.search).get('lang'),L=q||localStorage.getItem('dlh-lang')||((navigator.language||'').toLowerCase().indexOf('zh')===0?'zh':'en');if(!T[L])L='zh';
+function f(x){return Number(x).toLocaleString(L==='zh'?'zh-CN':'en-US',{minimumFractionDigits:0,maximumFractionDigits:2})}
+var $=function(i){return document.getElementById(i)};
+function paint(){var t=T[L];document.documentElement.lang=L==='zh'?'zh-CN':'en';document.title=t.h1;
+ document.querySelectorAll('[data-t]').forEach(function(e){var k=e.getAttribute('data-t');if(typeof t[k]==='string')e.textContent=t[k]});$('lang').textContent=t.lang;calc()}
+function calc(){var t=T[L],w=parseFloat($('wage').value),d=parseFloat($('days').value);$('err').textContent='';
+ if(!(w>0)||!(d>0)){$('hero').classList.add('idle');$('big').textContent='—';$('how').textContent=t.resIdle;
+  if($('wage').value&&!(w>0))$('err').textContent=t.eW;else if($('days').value&&!(d>0))$('err').textContent=t.eD;return}
+ var r=LaborCore.leavePay(w,d);$('hero').classList.remove('idle');$('big').textContent=(L==='zh'?'¥':'¥')+f(r.extra);$('how').textContent=t.how(r)}
+$('wage').addEventListener('input',calc);$('days').addEventListener('input',calc);
+$('ex').addEventListener('click',function(){$('wage').value=6525;$('days').value=3;calc()});
+$('lang').addEventListener('click',function(){L=L==='zh'?'en':'zh';localStorage.setItem('dlh-lang',L);paint()});
+paint();
 })();
 </script>
 </body>
